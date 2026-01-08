@@ -116,7 +116,8 @@ window.addEventListener("resize", () => {
 </script>
 
 </body>
-</html>    camera.position.set(3, 3, 5);
+</html>    
+camera.position.set(3, 3, 5);
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -137,48 +138,121 @@ window.addEventListener("resize", () => {
     scene.add(directionalLight);
 
     // Cube
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Image to 3D Cube</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+
+<style>
+html, body {
+    margin: 0;
+    height: 100%;
+    background: #111;
+    overflow: hidden;
+    font-family: system-ui, sans-serif;
+}
+
+#ui {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 10;
+    background: rgba(0,0,0,0.7);
+    padding: 12px;
+    border-radius: 8px;
+    color: white;
+}
+
+button {
+    margin-top: 6px;
+    width: 100%;
+}
+</style>
+</head>
+
+<body>
+
+<div id="ui">
+    <input type="file" id="upload" accept="image/*">
+    <button id="resetCam">Reset Camera</button>
+</div>
+
+<script>
+let scene, camera, renderer, cube, controls;
+let autoRotate = true;
+
+function init() {
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x202020);
+
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 0, 4);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
     const geometry = new THREE.BoxGeometry(2, 2, 2);
-    let cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x555555 });
-    let cube = new THREE.Mesh(geometry, cubeMaterial);
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ffcc });
+    cube = new THREE.Mesh(geometry, material);
     scene.add(cube);
 
-    // Image upload handling
-    const imageInput = document.getElementById("imageInput");
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.enablePan = false;
+    controls.minDistance = 2.5;
+    controls.maxDistance = 8;
 
-    imageInput.addEventListener("change", () => {
-        const file = imageInput.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const texture = new THREE.TextureLoader().load(e.target.result);
-            texture.colorSpace = THREE.SRGBColorSpace;
-
-            const materials = Array(6).fill(
-                new THREE.MeshStandardMaterial({ map: texture })
-            );
-
-            cube.material = materials;
-        };
-        reader.readAsDataURL(file);
-    });
-
-    // Resize handling
-    window.addEventListener("resize", () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-    // Animation loop
-    function animate() {
-        requestAnimationFrame(animate);
-        controls.update();
-        cube.rotation.y += 0.002;
-        renderer.render(scene, camera);
-    }
+    controls.addEventListener("start", () => autoRotate = false);
+    controls.addEventListener("end", () => autoRotate = true);
 
     animate();
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    if (autoRotate) {
+        cube.rotation.y += 0.003;
+    }
+
+    controls.update();
+    renderer.render(scene, camera);
+}
+
+document.getElementById("upload").addEventListener("change", (e) => {
+    if (!scene) init();
+
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+        const texture = new THREE.TextureLoader().load(reader.result);
+        cube.material = new THREE.MeshBasicMaterial({ map: texture });
+    };
+    reader.readAsDataURL(file);
+});
+
+document.getElementById("resetCam").addEventListener("click", () => {
+    camera.position.set(0, 0, 4);
+    controls.target.set(0, 0, 0);
+    controls.update();
+});
+
+window.addEventListener("resize", () => {
+    if (!camera || !renderer) return;
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
 </script>
 
 </body>
