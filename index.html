@@ -1,136 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Image to 3D Cube</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Image to 3D Cube</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 
-    <!-- Styles -->
-    <style>
-        html, body {
-            margin: 0;
-            height: 100%;
-            background: #111;
-            overflow: hidden;
-            font-family: system-ui, sans-serif;
-        }
+<style>
+html, body {
+    margin: 0;
+    height: 100%;
+    background: #111;
+    overflow: hidden;
+    font-family: sans-serif;
+}
 
-        #ui {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            z-index: 10;
-            background: rgba(0,0,0,0.7);
-            padding: 12px;
-            border-radius: 8px;
-            color: #fff;
-        }
-
-        button {
-            margin-top: 6px;
-            width: 100%;
-        }
-    </style>
+#panel {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+    background: rgba(0,0,0,0.7);
+    padding: 10px;
+    border-radius: 6px;
+    color: white;
+}
+</style>
 </head>
 
 <body>
 
-    <!-- UI -->
-    <div id="ui">
-        <input type="file" id="upload" accept="image/*">
-        <button id="resetCam">Reset Camera</button>
-    </div>
+<div id="panel">
+    <input type="file" id="upload" accept="image/*">
+</div>
 
-    <!-- Application Script -->
-    <script>
-        let scene, camera, renderer, cube, controls;
-        let autoRotate = true;
-        let initialized = false;
+<script>
+let scene, camera, renderer, cube;
 
-        function init() {
-            if (initialized) return;
-            initialized = true;
+function init() {
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x202020);
 
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x202020);
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.z = 4;
 
-            camera = new THREE.PerspectiveCamera(
-                60,
-                window.innerWidth / window.innerHeight,
-                0.1,
-                100
-            );
-            camera.position.set(0, 0, 4);
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
+    const geometry = new THREE.BoxGeometry(2, 2, 2);
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ffcc });
+    cube = new THREE.Mesh(geometry, material);
+    scene.add(cube);
 
-            const geometry = new THREE.BoxGeometry(2, 2, 2);
-            cube = new THREE.Mesh(
-                geometry,
-                new THREE.MeshBasicMaterial({ color: 0x00ffcc })
-            );
-            scene.add(cube);
+    animate();
+}
 
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.enablePan = false;
-            controls.minDistance = 2.5;
-            controls.maxDistance = 8;
+function animate() {
+    requestAnimationFrame(animate);
+    cube.rotation.x += 0.01;
+    cube.rotation.y += 0.01;
+    renderer.render(scene, camera);
+}
 
-            controls.addEventListener("start", () => autoRotate = false);
-            controls.addEventListener("end", () => autoRotate = true);
+document.getElementById("upload").addEventListener("change", (e) => {
+    if (!scene) init();
 
-            animate();
-        }
+    const file = e.target.files[0];
+    if (!file) return;
 
-        function animate() {
-            requestAnimationFrame(animate);
+    const reader = new FileReader();
+    reader.onload = () => {
+        const texture = new THREE.TextureLoader().load(reader.result);
+        cube.material = new THREE.MeshBasicMaterial({ map: texture });
+    };
+    reader.readAsDataURL(file);
+});
 
-            if (autoRotate && cube) {
-                cube.rotation.y += 0.003;
-            }
-
-            if (controls) controls.update();
-            if (renderer && scene && camera) {
-                renderer.render(scene, camera);
-            }
-        }
-
-        document.getElementById("upload").addEventListener("change", (e) => {
-            init();
-
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = () => {
-                const texture = new THREE.TextureLoader().load(reader.result);
-                cube.material = new THREE.MeshBasicMaterial({ map: texture });
-            };
-            reader.readAsDataURL(file);
-        });
-
-        document.getElementById("resetCam").addEventListener("click", () => {
-            if (!camera || !controls) return;
-            camera.position.set(0, 0, 4);
-            controls.target.set(0, 0, 0);
-            controls.update();
-        });
-
-        window.addEventListener("resize", () => {
-            if (!camera || !renderer) return;
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
+window.addEventListener("resize", () => {
+    if (!camera || !renderer) return;
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
 
 </body>
 </html>
