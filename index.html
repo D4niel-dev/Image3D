@@ -1,90 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Image to 3D Cube</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <title>Image to 3D Cube</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <!-- Three.js -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 
-<style>
-html, body {
-    margin: 0;
-    height: 100%;
-    background: #111;
-    overflow: hidden;
-    font-family: sans-serif;
-}
+    <!-- Styles -->
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            background: #111;
+            overflow: hidden;
+            font-family: sans-serif;
+        }
 
-#panel {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 10;
-    background: rgba(0,0,0,0.7);
-    padding: 10px;
-    border-radius: 6px;
-    color: white;
-}
-</style>
+        #panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 6px;
+            color: white;
+        }
+    </style>
 </head>
 
 <body>
+    <!-- UI Panel -->
+    <div id="panel">
+        <input type="file" id="upload" accept="image/*" />
+    </div>
 
-<div id="panel">
-    <input type="file" id="upload" accept="image/*">
-</div>
+    <!-- Application Script -->
+    <script>
+        let scene;
+        let camera;
+        let renderer;
+        let cube;
 
-<script>
-let scene, camera, renderer, cube;
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x202020);
 
-function init() {
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x202020);
+            camera = new THREE.PerspectiveCamera(
+                60,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                100
+            );
+            camera.position.z = 4;
 
-    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.z = 4;
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
 
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+            const geometry = new THREE.BoxGeometry(2, 2, 2);
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ffcc });
+            cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
 
-    const geometry = new THREE.BoxGeometry(2, 2, 2);
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ffcc });
-    cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
+            animate();
+        }
 
-    animate();
-}
+        function animate() {
+            requestAnimationFrame(animate);
 
-function animate() {
-    requestAnimationFrame(animate);
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
-    renderer.render(scene, camera);
-}
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
 
-document.getElementById("upload").addEventListener("change", (e) => {
-    if (!scene) init();
+            renderer.render(scene, camera);
+        }
 
-    const file = e.target.files[0];
-    if (!file) return;
+        document.getElementById("upload").addEventListener("change", (event) => {
+            if (!scene) {
+                init();
+            }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-        const texture = new THREE.TextureLoader().load(reader.result);
-        cube.material = new THREE.MeshBasicMaterial({ map: texture });
-    };
-    reader.readAsDataURL(file);
-});
+            const file = event.target.files[0];
+            if (!file) return;
 
-window.addEventListener("resize", () => {
-    if (!camera || !renderer) return;
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
-</script>
+            const reader = new FileReader();
+            reader.onload = () => {
+                const texture = new THREE.TextureLoader().load(reader.result);
+                cube.material = new THREE.MeshBasicMaterial({ map: texture });
+            };
 
+            reader.readAsDataURL(file);
+        });
+
+        window.addEventListener("resize", () => {
+            if (!camera || !renderer) return;
+
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
 </body>
 </html>
