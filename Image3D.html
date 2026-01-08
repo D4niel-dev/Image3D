@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Image to 3D Cube</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Three.js -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+
+    <style>
+        html, body {
+            margin: 0;
+            height: 100%;
+            background: #0f1115;
+            color: #ffffff;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow: hidden;
+        }
+
+        #ui {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            z-index: 10;
+            background: rgba(20, 20, 30, 0.9);
+            padding: 14px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        input[type="file"] {
+            display: block;
+            color: white;
+        }
+
+        #hint {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 6px;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div id="ui">
+    <input type="file" id="imageInput" accept="image/*" />
+    <div id="hint">Upload an image to texture the cube</div>
+</div>
+
+<script>
+    // Scene
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0f1115);
+
+    // Camera
+    const camera = new THREE.PerspectiveCamera(
+        60,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+    );
+    camera.position.set(3, 3, 5);
+
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.body.appendChild(renderer.domElement);
+
+    // Controls
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(5, 10, 7);
+    scene.add(directionalLight);
+
+    // Cube
+    const geometry = new THREE.BoxGeometry(2, 2, 2);
+    let cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x555555 });
+    let cube = new THREE.Mesh(geometry, cubeMaterial);
+    scene.add(cube);
+
+    // Image upload handling
+    const imageInput = document.getElementById("imageInput");
+
+    imageInput.addEventListener("change", () => {
+        const file = imageInput.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const texture = new THREE.TextureLoader().load(e.target.result);
+            texture.colorSpace = THREE.SRGBColorSpace;
+
+            const materials = Array(6).fill(
+                new THREE.MeshStandardMaterial({ map: texture })
+            );
+
+            cube.material = materials;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Resize handling
+    window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Animation loop
+    function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        cube.rotation.y += 0.002;
+        renderer.render(scene, camera);
+    }
+
+    animate();
+</script>
+
+</body>
+</html>
