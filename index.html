@@ -300,6 +300,9 @@
             const startRotationY = cube.rotation.y;
 
             // PREPARE CENTERED CAMERA
+            const originalPixelRatio = renderer.getPixelRatio();
+            renderer.setPixelRatio(1);
+            renderer.setViewport(0, 0, 500, 500);
             renderer.setSize(500, 500);
             camera.aspect = 1;
             
@@ -345,11 +348,14 @@
         }
 
         function finishRecording(w, h, aspect, rotY) {
+            renderer.setPixelRatio(originalPixelRatio);
             renderer.setSize(w, h);
+            renderer.setViewport(0, 0, w, h);
             camera.aspect = aspect;
             camera.updateProjectionMatrix();
             cube.rotation.y = rotY;
             recOverlay.classList.add('hidden');
+            
             isRecording = false;
             controls.enabled = true; // restore interaction
         }
