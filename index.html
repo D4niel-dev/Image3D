@@ -357,16 +357,18 @@
             const recWidth = 500;
             const recHeight = 500;
             camera.aspect = 1;
-            camera.updateProjectionMatrix();
             renderer.setSize(recWidth, recHeight);
             
             // Reset Cube Position
             const startRotation = cube.rotation.y;
             cube.rotation.y = 0;
             controls.reset();
-            camera.position.set(3.5, 2.5, 4.5); // Fixed nice angle
+            camera.position.set(4, 3, 5); // Fixed nice angle
             camera.lookAt(0,0,0);
-
+            camera.updateProjectionMatrix();
+            controls.target.set(0, 0, 0);
+            controls.update();
+            
             // 4. Record Loop (60 frames for 1 full rotation)
             const frames = 60;
             const anglePerFrame = (Math.PI * 2) / frames;
