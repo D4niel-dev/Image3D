@@ -2,106 +2,315 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>Image to 3D Cube</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Cube Viewer</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Three.js -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- OrbitControls -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
-    <!-- Styles -->
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
     <style>
-        html,
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+        
         body {
-            margin: 0;
-            height: 100%;
-            background: #111;
+            font-family: 'Inter', sans-serif;
+            background-color: #0f0f11;
             overflow: hidden;
-            font-family: sans-serif;
         }
 
-        #panel {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 10;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            border-radius: 6px;
-            color: white;
+        /* Custom Scrollbar for any overflow content */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .glass-panel {
+            background: rgba(20, 20, 25, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* Hide file input */
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn-hover {
+            transition: all 0.2s ease;
+        }
+        .btn-hover:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .btn-hover:active {
+            transform: translateY(0);
         }
     </style>
 </head>
 
-<body>
-    <!-- UI Panel -->
-    <div id="panel">
-        <input type="file" id="upload" accept="image/*" />
+<body class="text-white h-screen w-screen relative">
+
+    <!-- Canvas Container -->
+    <div id="canvas-container" class="absolute inset-0 z-0 bg-gradient-to-b from-gray-900 to-black"></div>
+
+    <!-- UI Overlay -->
+    <div class="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-6">
+        
+        <!-- Header / Main Controls -->
+        <div class="glass-panel p-5 rounded-2xl w-full max-w-sm pointer-events-auto transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <h1 class="text-lg font-semibold tracking-wide text-gray-100 flex items-center gap-2">
+                    <i data-lucide="box" class="w-5 h-5 text-indigo-400"></i>
+                    Cube Viewer
+                </h1>
+                <div class="px-2 py-1 rounded bg-indigo-500/20 text-indigo-300 text-xs font-medium border border-indigo-500/30">
+                    Beta
+                </div>
+            </div>
+            
+            <p class="text-sm text-gray-400 mb-6 leading-relaxed">
+                Upload an image to texture the cube. Drag to rotate, scroll to zoom.
+            </p>
+
+            <div class="space-y-3">
+                <!-- Upload Button -->
+                <label for="upload" class="btn-hover cursor-pointer w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-medium shadow-lg shadow-indigo-500/20 border border-indigo-400/20">
+                    <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+                    <span>Select Image</span>
+                </label>
+                <input type="file" id="upload" accept="image/*" />
+
+                <!-- Action Buttons Row -->
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="toggle-rotate" class="btn-hover flex items-center justify-center gap-2 bg-gray-700/50 hover:bg-gray-700 text-gray-200 py-2.5 rounded-xl border border-gray-600/30 text-sm transition-colors">
+                        <i data-lucide="rotate-3d" class="w-4 h-4"></i>
+                        <span id="rotate-text">Pause</span>
+                    </button>
+                    
+                    <button id="reset-cam" class="btn-hover flex items-center justify-center gap-2 bg-gray-700/50 hover:bg-gray-700 text-gray-200 py-2.5 rounded-xl border border-gray-600/30 text-sm transition-colors">
+                        <i data-lucide="camera" class="w-4 h-4"></i>
+                        <span>Reset View</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Status / Hint -->
+        <div class="glass-panel px-4 py-2 rounded-full self-center pointer-events-auto flex items-center gap-2 animate-fade-in-up">
+            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+            <span class="text-xs text-gray-300 font-medium">Ready for interaction</span>
+        </div>
     </div>
 
     <!-- Application Script -->
     <script>
-        let scene;
-        let camera;
-        let renderer;
-        let cube;
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        let scene, camera, renderer, cube, controls, gridHelper;
+        let isAutoRotating = true;
+        let animationId;
+
+        // DOM Elements
+        const rotateBtn = document.getElementById('toggle-rotate');
+        const rotateText = document.getElementById('rotate-text');
+        const resetBtn = document.getElementById('reset-cam');
+        const uploadInput = document.getElementById('upload');
 
         function init() {
+            const container = document.getElementById('canvas-container');
+
+            // 1. Scene Setup
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x202020);
+            // Fog matches the bottom of the CSS gradient for seamless blending
+            scene.fog = new THREE.FogExp2(0x000000, 0.035);
 
-            camera = new THREE.PerspectiveCamera(
-                60,
-                window.innerWidth / window.innerHeight,
-                0.1,
-                100
-            );
-            camera.position.z = 4;
+            // 2. Camera Setup
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.set(4, 3, 5); // Nice isometric-ish starting angle
 
-            renderer = new THREE.WebGLRenderer({ antialias: true });
+            // 3. Renderer Setup
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            // Tone mapping for better realism
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.0;
+            container.appendChild(renderer.domElement);
 
+            // 4. Controls (OrbitControls)
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true; // Smooth motion
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 2;
+            controls.maxDistance = 15;
+            
+            // Stop auto-rotation temporarily when user interacts
+            controls.addEventListener('start', () => { isAutoRotating = false; updateRotateBtnUI(); });
+
+            // 5. Lighting (Crucial for 3D look)
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            directionalLight.position.set(5, 10, 7);
+            scene.add(directionalLight);
+            
+            const backLight = new THREE.DirectionalLight(0x5555ff, 0.5);
+            backLight.position.set(-5, 0, -5);
+            scene.add(backLight);
+
+            // 6. The Cube
+            // Using BoxGeometry with slight bevel logic? Standard box for now.
             const geometry = new THREE.BoxGeometry(2, 2, 2);
-            const material = new THREE.MeshBasicMaterial({ color: 0x00ffcc });
+            
+            // Default material (Placeholder texture)
+            // Create a canvas for the default placeholder texture
+            const ctx = document.createElement('canvas').getContext('2d');
+            ctx.canvas.width = 512;
+            ctx.canvas.height = 512;
+            ctx.fillStyle = '#1e1b4b'; // Dark Indigo
+            ctx.fillRect(0,0,512,512);
+            ctx.fillStyle = '#4f46e5'; // Indigo 600
+            ctx.font = 'bold 60px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('UPLOAD', 256, 230);
+            ctx.fillText('IMAGE', 256, 290);
+            ctx.strokeStyle = '#312e81';
+            ctx.lineWidth = 10;
+            ctx.strokeRect(0,0,512,512);
+            
+            const texture = new THREE.CanvasTexture(ctx.canvas);
+            
+            // MeshStandardMaterial reacts to light
+            const material = new THREE.MeshStandardMaterial({ 
+                map: texture,
+                roughness: 0.2,
+                metalness: 0.1
+            });
+            
             cube = new THREE.Mesh(geometry, material);
             scene.add(cube);
 
+            // 7. Grid Floor (Visual Anchor)
+            gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
+            gridHelper.position.y = -1.5;
+            scene.add(gridHelper);
+
+            // Start Animation Loop
             animate();
         }
 
         function animate() {
             requestAnimationFrame(animate);
 
-            cube.rotation.x += 0.01;
-            cube.rotation.y += 0.01;
+            // Update controls (required for damping)
+            controls.update();
+
+            // Auto Rotation logic
+            if (isAutoRotating) {
+                cube.rotation.y += 0.005;
+            }
 
             renderer.render(scene, camera);
         }
 
-        document.getElementById("upload").addEventListener("change", (event) => {
-            if (!scene) {
-                init();
+        function updateRotateBtnUI() {
+            if (isAutoRotating) {
+                rotateText.innerText = "Pause";
+                rotateBtn.classList.remove('bg-yellow-600/20', 'text-yellow-400');
+            } else {
+                rotateText.innerText = "Rotate";
             }
+        }
 
+        // --- Event Listeners ---
+
+        // Handle Image Upload
+        uploadInput.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = () => {
-                const texture = new THREE.TextureLoader().load(reader.result);
-                cube.material = new THREE.MeshBasicMaterial({ map: texture });
+            reader.onload = (e) => {
+                const loader = new THREE.TextureLoader();
+                loader.load(e.target.result, (texture) => {
+                    // Fix color space for correct rendering
+                    texture.encoding = THREE.sRGBEncoding;
+                    
+                    // Update material
+                    cube.material.map = texture;
+                    cube.material.needsUpdate = true;
+                    
+                    // Reset rotation to front to see image clearly
+                    isAutoRotating = true;
+                    updateRotateBtnUI();
+                });
             };
-
             reader.readAsDataURL(file);
         });
 
-        window.addEventListener("resize", () => {
-            if (!camera || !renderer) return;
+        // Toggle Rotation
+        rotateBtn.addEventListener('click', () => {
+            isAutoRotating = !isAutoRotating;
+            updateRotateBtnUI();
+        });
 
+        // Reset Camera
+        resetBtn.addEventListener('click', () => {
+            controls.reset();
+            camera.position.set(4, 3, 5);
+            cube.rotation.set(0, 0, 0);
+            isAutoRotating = true;
+            updateRotateBtnUI();
+        });
+
+        // Window Resize
+        window.addEventListener('resize', () => {
+            if (!camera || !renderer) return;
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
+
+        // Drag and drop support on the window
+        window.addEventListener('dragover', (e) => e.preventDefault());
+        window.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                // Manually trigger the reader logic used in the input change
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    new THREE.TextureLoader().load(ev.target.result, (texture) => {
+                        texture.encoding = THREE.sRGBEncoding;
+                        cube.material.map = texture;
+                        cube.material.needsUpdate = true;
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Start
+        init();
+
     </script>
 </body>
 </html>
