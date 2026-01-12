@@ -67,7 +67,6 @@
             transform: translateY(-20px);
         }
 
-        /* Loading Bar Animation */
         .progress-bar {
             transition: width 0.1s linear;
         }
@@ -79,7 +78,7 @@
     <!-- Canvas Container -->
     <div id="canvas-container" class="absolute inset-0 z-0 bg-gradient-to-b from-gray-900 to-black cursor-move"></div>
 
-    <!-- Recording Overlay (Hidden by default) -->
+    <!-- Recording Overlay -->
     <div id="recording-overlay" class="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center hidden">
         <div class="glass-panel p-8 rounded-2xl flex flex-col items-center max-w-xs w-full text-center border-indigo-500/30">
             <div class="relative w-16 h-16 mb-4">
@@ -90,7 +89,6 @@
             <h2 id="rec-status-title" class="text-xl font-bold text-white mb-2">Recording...</h2>
             <p id="rec-status-text" class="text-sm text-gray-400 mb-6">Capturing frames for perfect loop</p>
             
-            <!-- Progress Bar -->
             <div class="w-full h-2 bg-gray-700 rounded-full overflow-hidden mb-2">
                 <div id="rec-progress" class="h-full bg-indigo-500 progress-bar" style="width: 0%"></div>
             </div>
@@ -103,7 +101,6 @@
         
         <!-- TOP BAR -->
         <div class="flex justify-between items-start pointer-events-auto">
-            <!-- Main Control Panel -->
             <div id="main-panel" class="glass-panel p-5 rounded-2xl w-full max-w-sm transition-all duration-300 origin-top-left">
                 <div class="flex items-center justify-between mb-4">
                     <h1 class="text-lg font-semibold tracking-wide text-gray-100 flex items-center gap-2">
@@ -116,24 +113,21 @@
                 </div>
                 
                 <p class="text-xs text-gray-400 mb-5 leading-relaxed">
-                    Upload texture. Drag to rotate. Download GIF loop.
+                    Upload texture. Drag to rotate. Download centered GIF loop.
                 </p>
 
                 <div class="space-y-3">
-                    <!-- Upload -->
                     <label for="upload" class="glass-btn cursor-pointer w-full flex items-center justify-center gap-2 bg-indigo-600/80 hover:bg-indigo-500/90 py-3 rounded-xl font-medium shadow-lg shadow-indigo-500/20 !border-indigo-400/30">
                         <i data-lucide="image-plus" class="w-5 h-5"></i>
                         <span>Upload Texture</span>
                     </label>
                     <input type="file" id="upload" accept="image/*" />
 
-                    <!-- GIF Download Button -->
                     <button id="record-gif" class="glass-btn w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium bg-rose-500/10 hover:bg-rose-500/20 border-rose-500/20 text-rose-300">
                         <i data-lucide="film" class="w-5 h-5"></i>
                         <span>Download GIF Loop</span>
                     </button>
 
-                    <!-- Controls Row -->
                     <div class="grid grid-cols-2 gap-3">
                         <button id="toggle-rotate" class="glass-btn flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm">
                             <i data-lucide="rotate-3d" class="w-4 h-4"></i>
@@ -148,7 +142,6 @@
                 </div>
             </div>
 
-            <!-- Hide UI Toggle -->
             <button id="visibility-toggle" class="glass-btn p-3 rounded-full shadow-xl pointer-events-auto group" title="Toggle UI Visibility">
                 <i data-lucide="eye" id="vis-icon" class="w-5 h-5 group-hover:text-indigo-300 transition-colors"></i>
             </button>
@@ -156,13 +149,11 @@
 
         <!-- BOTTOM BAR -->
         <div class="flex items-end justify-between pointer-events-auto">
-            <!-- Status Pill -->
             <div id="status-pill" class="glass-panel px-4 py-2 rounded-full flex items-center gap-2 transition-all duration-300">
                 <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                 <span class="text-xs text-gray-300 font-medium tracking-wide">Interactive Mode</span>
             </div>
 
-            <!-- Zoom Controls -->
             <div class="flex flex-col gap-2">
                 <button id="zoom-in" class="glass-btn p-3 rounded-xl shadow-lg" title="Zoom In">
                     <i data-lucide="plus" class="w-5 h-5"></i>
@@ -174,9 +165,7 @@
         </div>
     </div>
 
-    <!-- Application Script -->
     <script>
-        // Initialize Lucide Icons
         lucide.createIcons();
 
         let scene, camera, renderer, cube, controls, gridHelper;
@@ -184,7 +173,6 @@
         let isUIVisible = true;
         let isRecording = false;
 
-        // DOM Elements
         const rotateBtn = document.getElementById('toggle-rotate');
         const rotateText = document.getElementById('rotate-text');
         const resetBtn = document.getElementById('reset-cam');
@@ -196,8 +184,6 @@
         const zoomInBtn = document.getElementById('zoom-in');
         const zoomOutBtn = document.getElementById('zoom-out');
         const recordBtn = document.getElementById('record-gif');
-        
-        // Recording UI Elements
         const recOverlay = document.getElementById('recording-overlay');
         const recStatusTitle = document.getElementById('rec-status-title');
         const recStatusText = document.getElementById('rec-status-text');
@@ -206,14 +192,12 @@
 
         function init() {
             const container = document.getElementById('canvas-container');
-
             scene = new THREE.Scene();
             scene.fog = new THREE.FogExp2(0x000000, 0.035);
 
             camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
             camera.position.set(4, 3, 5);
 
-            // Important: preserveDrawingBuffer required for canvas capture
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
@@ -234,9 +218,7 @@
                 }
             });
 
-            // Lighting
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-            scene.add(ambientLight);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.7));
             const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
             directionalLight.position.set(5, 10, 7);
             scene.add(directionalLight);
@@ -244,18 +226,16 @@
             backLight.position.set(-5, 0, -5);
             scene.add(backLight);
 
-            // Cube
-            const geometry = new THREE.BoxGeometry(2, 2, 2);
-            const texture = createDefaultTexture();
-            const material = new THREE.MeshStandardMaterial({ 
-                map: texture,
-                roughness: 0.3,
-                metalness: 0.1
-            });
-            cube = new THREE.Mesh(geometry, material);
+            cube = new THREE.Mesh(
+                new THREE.BoxGeometry(2, 2, 2), 
+                new THREE.MeshStandardMaterial({ 
+                    map: createDefaultTexture(),
+                    roughness: 0.3,
+                    metalness: 0.1
+                })
+            );
             scene.add(cube);
 
-            // Grid
             gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
             gridHelper.position.y = -1.5;
             scene.add(gridHelper);
@@ -265,30 +245,19 @@
 
         function createDefaultTexture() {
             const ctx = document.createElement('canvas').getContext('2d');
-            ctx.canvas.width = 512;
-            ctx.canvas.height = 512;
+            ctx.canvas.width = 512; ctx.canvas.height = 512;
             const grd = ctx.createLinearGradient(0, 0, 512, 512);
-            grd.addColorStop(0, "#3730a3");
-            grd.addColorStop(1, "#1e1b4b");
-            ctx.fillStyle = grd;
-            ctx.fillRect(0,0,512,512);
-            ctx.strokeStyle = "rgba(255,255,255,0.1)";
-            ctx.lineWidth = 2;
+            grd.addColorStop(0, "#3730a3"); grd.addColorStop(1, "#1e1b4b");
+            ctx.fillStyle = grd; ctx.fillRect(0,0,512,512);
+            ctx.strokeStyle = "rgba(255,255,255,0.1)"; ctx.lineWidth = 2;
             for(let i=0; i<=512; i+=64) {
                 ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,512); ctx.stroke();
                 ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(512,i); ctx.stroke();
             }
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 40px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 40px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText('DROP IMAGE', 256, 240);
-            ctx.font = '24px sans-serif';
-            ctx.fillStyle = '#a5b4fc';
-            ctx.fillText('TO TEXTURE', 256, 280);
-            ctx.strokeStyle = '#6366f1';
-            ctx.lineWidth = 12;
-            ctx.strokeRect(0,0,512,512);
+            ctx.font = '24px sans-serif'; ctx.fillStyle = '#a5b4fc'; ctx.fillText('TO TEXTURE', 256, 280);
+            ctx.strokeStyle = '#6366f1'; ctx.lineWidth = 12; ctx.strokeRect(0,0,512,512);
             return new THREE.CanvasTexture(ctx.canvas);
         }
 
@@ -296,144 +265,89 @@
             requestAnimationFrame(animate);
             if (!isRecording) {
                 controls.update();
-                if (isAutoRotating) {
-                    cube.rotation.y += 0.005;
-                }
+                if (isAutoRotating) { cube.rotation.y += 0.005; }
             }
             renderer.render(scene, camera);
         }
 
         function updateRotateBtnUI() {
-            if (isAutoRotating) {
-                rotateText.innerText = "Pause";
-                rotateBtn.classList.remove('bg-yellow-500/20', 'text-yellow-300');
-            } else {
-                rotateText.innerText = "Rotate";
-                rotateBtn.classList.add('bg-yellow-500/20', 'text-yellow-300');
-            }
+            rotateText.innerText = isAutoRotating ? "Pause" : "Rotate";
+            if (isAutoRotating) rotateBtn.classList.remove('bg-yellow-500/20', 'text-yellow-300');
+            else rotateBtn.classList.add('bg-yellow-500/20', 'text-yellow-300');
         }
-
-        // --- GIF Recording Logic ---
 
         async function startRecording() {
             isRecording = true;
-            
-            // Show Overlay
             recOverlay.classList.remove('hidden');
             recStatusTitle.innerText = "Capturing...";
-            recStatusText.innerText = "Recording 360° rotation";
             recProgress.style.width = "0%";
             recPercentage.innerText = "0%";
 
-            // 1. Fetch worker code to create a local blob (Avoids CORS issues with cross-origin workers)
             let workerBlob;
             try {
                 const response = await fetch('https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js');
-                if (!response.ok) throw new Error("Network response was not ok");
                 workerBlob = await response.blob();
-            } catch (error) {
-                console.error("Worker fetch failed, falling back to CDN URL (might fail in some sandboxes)", error);
-            }
+            } catch (e) { console.warn("Worker fallback used"); }
 
-            const workerUrl = workerBlob 
-                ? URL.createObjectURL(workerBlob) 
-                : 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js';
-
-            // 2. Initialize GIF
             const gif = new GIF({
-                workers: 2,
-                quality: 10,
-                width: 500,  // Scale down slightly for performance/size
-                height: 500 * (window.innerHeight / window.innerWidth),
-                workerScript: workerUrl
+                workers: 2, quality: 10, width: 500, height: 500,
+                workerScript: workerBlob ? URL.createObjectURL(workerBlob) : 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
             });
 
-            // 3. Setup Scene for Recording
+            // Save state
             const originalAspect = camera.aspect;
-            const originalSize = new THREE.Vector2();
-            renderer.getSize(originalSize);
+            const originalSize = new THREE.Vector2(); renderer.getSize(originalSize);
+            const startRotationY = cube.rotation.y;
 
-            // Resize renderer to fixed size for consistent GIF
-            const recWidth = 500;
-            const recHeight = 500;
+            // PREPARE CENTERED CAMERA
+            renderer.setSize(500, 500);
             camera.aspect = 1;
-            renderer.setSize(recWidth, recHeight);
-            
-            // Reset Cube Position
-            const startRotation = cube.rotation.y;
-            cube.rotation.y = 0;
-            controls.reset();
-            camera.position.set(4, 3, 5); // Fixed nice angle
-            camera.lookAt(0,0,0);
+            camera.position.set(4, 3, 5); // Fixed recording position
+            camera.lookAt(0, 0, 0);       // Look at origin
             camera.updateProjectionMatrix();
-            controls.target.set(0, 0, 0);
+            controls.target.set(0, 0, 0); // Explicitly center controls target
             controls.update();
-            
-            // 4. Record Loop (60 frames for 1 full rotation)
+
             const frames = 60;
             const anglePerFrame = (Math.PI * 2) / frames;
 
-            recStatusText.innerText = "Capturing Frames...";
-
-            // Use a small delay to let UI render the overlay before freezing thread
             setTimeout(() => {
                 for (let i = 0; i < frames; i++) {
-                    // Update rotation
                     cube.rotation.y = i * anglePerFrame;
-                    
-                    // Render
                     renderer.render(scene, camera);
-                    
-                    // Add frame
-                    gif.addFrame(renderer.domElement, {delay: 50, copy: true}); // 50ms = 20fps
-                    
-                    // Update UI (Approximation)
-                    const pct = Math.round((i / frames) * 50);
-                    recProgress.style.width = pct + "%";
+                    gif.addFrame(renderer.domElement, {delay: 50, copy: true});
+                    recProgress.style.width = Math.round((i / frames) * 50) + "%";
                 }
 
-                // 5. Render GIF
                 recStatusTitle.innerText = "Rendering...";
-                recStatusText.innerText = "Encoding GIF (this may take a moment)";
-                
                 gif.on('progress', (p) => {
-                    const pct = 50 + Math.round(p * 50); // Second half of progress bar
+                    const pct = 50 + Math.round(p * 50);
                     recProgress.style.width = pct + "%";
                     recPercentage.innerText = pct + "%";
                 });
 
                 gif.on('finished', (blob) => {
-                    // Download
-                    const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'cube-spin.gif';
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'cube-centered-loop.gif';
                     a.click();
-
-                    // Cleanup
-                    finishRecording(originalSize.x, originalSize.y, originalAspect, startRotation);
+                    finishRecording(originalSize.x, originalSize.y, originalAspect, startRotationY);
                 });
 
                 gif.render();
             }, 100);
         }
 
-        function finishRecording(w, h, aspect, rot) {
-            // Restore Scene
+        function finishRecording(w, h, aspect, rotY) {
             renderer.setSize(w, h);
             camera.aspect = aspect;
             camera.updateProjectionMatrix();
-            cube.rotation.y = rot;
-            
-            // Hide Overlay
+            cube.rotation.y = rotY;
             recOverlay.classList.add('hidden');
             isRecording = false;
         }
 
-        // --- Event Listeners ---
-
         recordBtn.addEventListener('click', startRecording);
-
         uploadInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -443,57 +357,33 @@
                     texture.encoding = THREE.sRGBEncoding;
                     cube.material.map = texture;
                     cube.material.needsUpdate = true;
-                    isAutoRotating = true;
-                    updateRotateBtnUI();
+                    isAutoRotating = true; updateRotateBtnUI();
                 });
             };
             reader.readAsDataURL(file);
         });
 
-        rotateBtn.addEventListener('click', () => {
-            isAutoRotating = !isAutoRotating;
-            updateRotateBtnUI();
-        });
-
-        resetBtn.addEventListener('click', () => {
-            controls.reset();
-            camera.position.set(4, 3, 5);
-            cube.rotation.set(0, 0, 0);
-            isAutoRotating = true;
-            updateRotateBtnUI();
+        rotateBtn.addEventListener('click', () => { isAutoRotating = !isAutoRotating; updateRotateBtnUI(); });
+        resetBtn.addEventListener('click', () => { 
+            controls.reset(); camera.position.set(4, 3, 5); 
+            cube.rotation.set(0, 0, 0); isAutoRotating = true; updateRotateBtnUI(); 
         });
 
         visToggle.addEventListener('click', () => {
             isUIVisible = !isUIVisible;
-            if (isUIVisible) {
-                mainPanel.classList.remove('hidden-ui');
-                statusPill.classList.remove('hidden-ui');
-                visIcon.setAttribute('data-lucide', 'eye');
-                visToggle.classList.remove('bg-indigo-500', 'text-white');
-            } else {
-                mainPanel.classList.add('hidden-ui');
-                statusPill.classList.add('hidden-ui');
-                visIcon.setAttribute('data-lucide', 'eye-off');
-                visToggle.classList.add('bg-indigo-500', 'text-white');
-            }
+            mainPanel.classList.toggle('hidden-ui', !isUIVisible);
+            statusPill.classList.toggle('hidden-ui', !isUIVisible);
+            visIcon.setAttribute('data-lucide', isUIVisible ? 'eye' : 'eye-off');
+            visToggle.classList.toggle('bg-indigo-500', !isUIVisible);
             lucide.createIcons();
         });
 
-        zoomInBtn.addEventListener('click', () => {
-            const distance = camera.position.distanceTo(controls.target);
-            if (distance > controls.minDistance) {
-                camera.position.lerp(controls.target, 0.2);
-                controls.update();
-            }
+        zoomInBtn.addEventListener('click', () => { 
+            camera.position.lerp(controls.target, 0.2); controls.update(); 
         });
-
-        zoomOutBtn.addEventListener('click', () => {
-            const distance = camera.position.distanceTo(controls.target);
-            if (distance < controls.maxDistance) {
-                const direction = camera.position.clone().sub(controls.target).normalize();
-                camera.position.add(direction.multiplyScalar(2)); 
-                controls.update();
-            }
+        zoomOutBtn.addEventListener('click', () => { 
+            const dir = camera.position.clone().sub(controls.target).normalize();
+            camera.position.add(dir.multiplyScalar(2)); controls.update(); 
         });
 
         window.addEventListener('resize', () => {
@@ -501,24 +391,6 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        // Drag and drop
-        window.addEventListener('dragover', (e) => e.preventDefault());
-        window.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    new THREE.TextureLoader().load(ev.target.result, (texture) => {
-                        texture.encoding = THREE.sRGBEncoding;
-                        cube.material.map = texture;
-                        cube.material.needsUpdate = true;
-                    });
-                };
-                reader.readAsDataURL(file);
-            }
         });
 
         init();
