@@ -302,11 +302,19 @@
             // PREPARE CENTERED CAMERA
             renderer.setSize(500, 500);
             camera.aspect = 1;
-            camera.position.set(4, 3, 5); // Fixed recording position
-            camera.lookAt(0, 0, 0);       // Look at origin
-            camera.updateProjectionMatrix();
-            controls.target.set(0, 0, 0); // Explicitly center controls target
+            
+            // Disable controls influence
+            controls.enabled = false;
+
+            // Hard reset camera & target
+            const box = new THREE.Box3().setFromObject(cube);
+            const size = box.getSize(new THREE.Vector3()).length();
+            camera.position.set(0, 0, size * 1.2);;
+            camera.up.set(0, 1, 0);
+            camera.lookAt(0, 0, 0);
+            controls.target.set(0, 0, 0);
             controls.update();
+            camera.updateProjectionMatrix();
 
             const frames = 60;
             const anglePerFrame = (Math.PI * 2) / frames;
@@ -345,6 +353,7 @@
             cube.rotation.y = rotY;
             recOverlay.classList.add('hidden');
             isRecording = false;
+            controls.enabled = true; // restore interaction
         }
 
         recordBtn.addEventListener('click', startRecording);
