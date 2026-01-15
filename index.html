@@ -5,17 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>3D Cube Viewer</title>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- OrbitControls -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <!-- GIF.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
 
-    <!-- Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
@@ -46,39 +41,63 @@
         }
         .glass-btn:hover {
             background: rgba(255, 255, 255, 0.15);
-            transform: scale(1.02);
         }
         .glass-btn:active {
-            transform: scale(0.98);
-        }
-        .glass-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
+            transform: scale(0.95);
         }
 
-        input[type="file"] {
-            display: none;
+        /* Specific style for the segmented zoom control */
+        .glass-group {
+            background: rgba(20, 20, 25, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
         }
+        
+        .glass-group-btn {
+            padding: 12px;
+            background: transparent;
+            color: #e5e7eb;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .glass-group-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+        .glass-group-btn:active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Divider between zoom buttons */
+        .glass-divider {
+            height: 1px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        input[type="file"] { display: none; }
 
         .hidden-ui {
             opacity: 0;
             pointer-events: none;
-            transform: translateY(-20px);
+            transform: translateY(-10px);
         }
 
-        .progress-bar {
-            transition: width 0.1s linear;
-        }
+        .progress-bar { transition: width 0.1s linear; }
     </style>
 </head>
 
 <body class="text-white h-screen w-screen relative">
 
-    <!-- Canvas Container -->
     <div id="canvas-container" class="absolute inset-0 z-0 bg-gradient-to-b from-gray-900 to-black cursor-move"></div>
 
-    <!-- Recording Overlay -->
     <div id="recording-overlay" class="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center hidden">
         <div class="glass-panel p-8 rounded-2xl flex flex-col items-center max-w-xs w-full text-center border-indigo-500/30">
             <div class="relative w-16 h-16 mb-4">
@@ -96,12 +115,10 @@
         </div>
     </div>
 
-    <!-- UI Layer -->
-    <div class="absolute inset-0 z-10 pointer-events-none p-4 md:p-6 flex flex-col justify-between">
+    <div class="absolute inset-0 z-10 pointer-events-none p-4 md:p-6 pb-14 md:pb-16 flex flex-col justify-between">
         
-        <!-- TOP BAR -->
         <div class="flex justify-between items-start pointer-events-auto">
-            <div id="main-panel" class="glass-panel p-5 rounded-2xl w-full max-w-sm transition-all duration-300 origin-top-left">
+            <div id="main-panel" class="glass-panel p-5 rounded-2xl w-full max-w-sm transition-all duration-300 origin-top-left shadow-2xl">
                 <div class="flex items-center justify-between mb-4">
                     <h1 class="text-lg font-semibold tracking-wide text-gray-100 flex items-center gap-2">
                         <i data-lucide="box" class="w-5 h-5 text-indigo-400"></i>
@@ -147,18 +164,22 @@
             </button>
         </div>
 
-        <!-- BOTTOM BAR -->
-        <div class="flex items-end justify-between pointer-events-auto">
-            <div id="status-pill" class="glass-panel px-4 py-2 rounded-full flex items-center gap-2 transition-all duration-300">
-                <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span class="text-xs text-gray-300 font-medium tracking-wide">Interactive Mode</span>
+        <div class="flex items-end justify-between pointer-events-auto mb-6 md:mb-8 transition-transform duration-300" id="bottom-controls">
+            
+            <div id="status-pill" class="glass-panel px-4 py-2.5 rounded-full flex items-center gap-3 transition-all duration-300 shadow-lg">
+                <div class="relative flex h-2.5 w-2.5">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </div>
+                <span class="text-xs text-gray-200 font-medium tracking-wide">Interactive Mode</span>
             </div>
 
-            <div class="flex flex-col gap-2">
-                <button id="zoom-in" class="glass-btn p-3 rounded-xl shadow-lg" title="Zoom In">
+            <div class="glass-group">
+                <button id="zoom-in" class="glass-group-btn" title="Zoom In">
                     <i data-lucide="plus" class="w-5 h-5"></i>
                 </button>
-                <button id="zoom-out" class="glass-btn p-3 rounded-xl shadow-lg" title="Zoom Out">
+                <div class="glass-divider"></div>
+                <button id="zoom-out" class="glass-group-btn" title="Zoom Out">
                     <i data-lucide="minus" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -173,12 +194,14 @@
         let isUIVisible = true;
         let isRecording = false;
 
+        // UI References
         const rotateBtn = document.getElementById('toggle-rotate');
         const rotateText = document.getElementById('rotate-text');
         const resetBtn = document.getElementById('reset-cam');
         const uploadInput = document.getElementById('upload');
         const mainPanel = document.getElementById('main-panel');
         const statusPill = document.getElementById('status-pill');
+        const bottomControls = document.getElementById('bottom-controls');
         const visToggle = document.getElementById('visibility-toggle');
         const visIcon = document.getElementById('vis-icon');
         const zoomInBtn = document.getElementById('zoom-in');
@@ -189,6 +212,9 @@
         const recStatusText = document.getElementById('rec-status-text');
         const recProgress = document.getElementById('rec-progress');
         const recPercentage = document.getElementById('rec-percentage');
+
+        // Original Render logic
+        let originalPixelRatio;
 
         function init() {
             const container = document.getElementById('canvas-container');
@@ -218,6 +244,7 @@
                 }
             });
 
+            // Lighting
             scene.add(new THREE.AmbientLight(0xffffff, 0.7));
             const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
             directionalLight.position.set(5, 10, 7);
@@ -226,6 +253,7 @@
             backLight.position.set(-5, 0, -5);
             scene.add(backLight);
 
+            // Cube
             cube = new THREE.Mesh(
                 new THREE.BoxGeometry(2, 2, 2), 
                 new THREE.MeshStandardMaterial({ 
@@ -236,6 +264,7 @@
             );
             scene.add(cube);
 
+            // Floor Grid
             gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
             gridHelper.position.y = -1.5;
             scene.add(gridHelper);
@@ -298,18 +327,17 @@
             const originalAspect = camera.aspect;
             const originalSize = new THREE.Vector2(); renderer.getSize(originalSize);
             const startRotationY = cube.rotation.y;
+            originalPixelRatio = renderer.getPixelRatio();
 
             // PREPARE CENTERED CAMERA
-            const originalPixelRatio = renderer.getPixelRatio();
             renderer.setPixelRatio(1);
             renderer.setViewport(0, 0, 500, 500);
             renderer.setSize(500, 500);
             camera.aspect = 1;
             
-            // Disable controls influence
             controls.enabled = false;
 
-            // Hard reset camera & target
+            // Hard reset camera & target for perfect center
             camera.position.set(0, 0, 6);
             camera.up.set(0, 1, 0);
             camera.lookAt(0, 0, 0);
@@ -357,10 +385,12 @@
             recOverlay.classList.add('hidden');
             
             isRecording = false;
-            controls.enabled = true; // restore interaction
+            controls.enabled = true;
         }
 
+        // Event Listeners
         recordBtn.addEventListener('click', startRecording);
+        
         uploadInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -377,6 +407,7 @@
         });
 
         rotateBtn.addEventListener('click', () => { isAutoRotating = !isAutoRotating; updateRotateBtnUI(); });
+        
         resetBtn.addEventListener('click', () => { 
             controls.reset(); camera.position.set(4, 3, 5); 
             cube.rotation.set(0, 0, 0); isAutoRotating = true; updateRotateBtnUI(); 
@@ -385,7 +416,9 @@
         visToggle.addEventListener('click', () => {
             isUIVisible = !isUIVisible;
             mainPanel.classList.toggle('hidden-ui', !isUIVisible);
-            statusPill.classList.toggle('hidden-ui', !isUIVisible);
+            // Hide the entire bottom control bar
+            bottomControls.classList.toggle('hidden-ui', !isUIVisible);
+            
             visIcon.setAttribute('data-lucide', isUIVisible ? 'eye' : 'eye-off');
             visToggle.classList.toggle('bg-indigo-500', !isUIVisible);
             lucide.createIcons();
@@ -394,6 +427,7 @@
         zoomInBtn.addEventListener('click', () => { 
             camera.position.lerp(controls.target, 0.2); controls.update(); 
         });
+        
         zoomOutBtn.addEventListener('click', () => { 
             const dir = camera.position.clone().sub(controls.target).normalize();
             camera.position.add(dir.multiplyScalar(2)); controls.update(); 
