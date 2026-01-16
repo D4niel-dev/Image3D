@@ -113,10 +113,15 @@
             height: 56px !important;
             width: 200px !important;
             resize: none !important;
+            overflow: hidden;
         }
         .minimized .panel-content { display: none; }
         .minimized .resize-handle { display: none; }
-
+        
+        #panel-header {
+            touch-action: none; /* Crucial for mobile dragging */
+            user-select: none;  /* Prevents text selection while dragging */
+        }
         input[type="file"] { display: none; }
         .hidden-ui { opacity: 0; pointer-events: none; }
         .progress-bar { transition: width 0.1s linear; }
@@ -217,7 +222,7 @@
         </div>
 
         <!-- Bottom UI -->
-        <div class="absolute bottom-8 left-6 right-6 flex items-end justify-between pointer-events-auto" id="bottom-controls">
+        <div class="absolute bottom-20 left-6 right-6 flex items-end justify-between pointer-events-auto" id="bottom-controls">
             <!-- Info Pill -->
             <div class="glass-panel px-4 py-2 rounded-full flex items-center gap-3 shadow-lg bg-black/40 border-white/5">
                 <div class="relative flex h-2 w-2">
@@ -386,61 +391,67 @@
             renderer.render(scene, camera);
         }
 
-        // --- DRAG LOGIC (IMPROVED) ---
+        // --- DRAG LOGIC ---
         const draggable = document.getElementById('draggable-panel');
         const header = document.getElementById('panel-header');
         let isDragging = false;
-        let dragOffset = { x: 0, y: 0 };
+        let startX, startY, initialLeft, initialTop;
 
-        // Allow drag from header OR any empty space in panel
-        draggable.addEventListener('mousedown', startDrag);
+        // Use 'pointerdown' to catch both Mouse and Touch
+        header.addEventListener('pointerdown', (e) => {
+          // Ignore if clicking the minimize button
+          if (e.target.closest('#minimize-btn')) return;
+          isDragging = true;
+    
+          // Record initial positions
+          startX = e.clientX;
+          startY = e.clientY;
+    
+          const rect = draggable.getBoundingClientRect();
+          initialLeft = rect.left;
+          initialTop = rect.top;
 
-        function startDrag(e) {
-            // Don't drag if clicking buttons, inputs, or resize handle
-            if(e.target.closest('button') || e.target.closest('input') || e.target.closest('label')) return;
-            
-            // Check if near bottom right corner (Resize zone)
-            const rect = draggable.getBoundingClientRect();
-            if (e.clientX > rect.right - 20 && e.clientY > rect.bottom - 20) return;
+          // Capture the pointer so movement works even if the finger leaves the header
+          header.setPointerCapture(e.pointerId);
+          header.style.cursor = 'grabbing';
 
-            isDragging = true;
-            
-            // Calculate offset relative to the element's current position
-            dragOffset.x = e.clientX - rect.left;
-            dragOffset.y = e.clientY - rect.top;
-            
-            draggable.style.cursor = 'grabbing';
-            document.addEventListener('mousemove', drag);
-            document.addEventListener('mouseup', endDrag);
+          // Attach listeners to document for smooth tracking
+          document.addEventListener('pointermove', onPointerMove);
+          document.addEventListener('pointerup', onPointerUp);
+        });
+
+        function onPointerMove(e) {
+           if (!isDragging) return;
+
+           // Calculate how far we've moved from the start point
+           const deltaX = e.clientX - startX;
+           const deltaY = e.clientY - startY;
+
+           // Calculate new position
+           let newX = initialLeft + deltaX;
+           let newY = initialTop + deltaY;
+
+           // Boundary constraints (Keep it on screen)
+           newX = Math.max(0, Math.min(window.innerWidth - 100, newX));
+           newY = Math.max(0, Math.min(window.innerHeight - 50, newY));
+
+           // Apply styles
+           draggable.style.left = `${newX}px`;
+           draggable.style.top = `${newY}px`;
+           draggable.style.bottom = 'auto'; // Break any CSS bottom alignment
+           draggable.style.right = 'auto';  // Break any CSS right alignment
         }
-
-        function drag(e) {
-            if (!isDragging) return;
-            e.preventDefault(); // Prevent text selection
-            
-            // Calculate new position
-            let x = e.clientX - dragOffset.x;
-            let y = e.clientY - dragOffset.y;
-
-            // Simple bounds checking
-            x = Math.max(0, Math.min(window.innerWidth - 50, x));
-            y = Math.max(0, Math.min(window.innerHeight - 50, y));
-
-            draggable.style.left = `${x}px`;
-            draggable.style.top = `${y}px`;
-            
-            // IMPORTANT: Clear bottom/right if they were set, to allow free movement
-            draggable.style.bottom = 'auto';
-            draggable.style.right = 'auto';
+        
+        function onPointerUp(e) {
+           if (!isDragging) return;
+        
+           isDragging = false;
+           header.style.cursor = 'grab';
+           header.releasePointerCapture(e.pointerId);
+           document.removeEventListener('pointermove', onPointerMove);
+           document.removeEventListener('pointerup', onPointerUp);
         }
-
-        function endDrag() {
-            isDragging = false;
-            draggable.style.cursor = 'auto';
-            document.removeEventListener('mousemove', drag);
-            document.removeEventListener('mouseup', endDrag);
-        }
-
+        
         // --- MINIMIZE LOGIC ---
         const minBtn = document.getElementById('minimize-btn');
         let isMinimized = false;
