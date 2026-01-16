@@ -208,6 +208,73 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Camera & Export Controls -->
+                <div class="space-y-3">
+                    <label class="text-[10px] text-gray-500 uppercase font-bold tracking-wider block">
+                        Camera Angle
+                    </label>
+                    <div class="space-y-2">
+                        <div>
+                            <span class="text-xs text-gray-400">Horizontal (Yaw)</span>
+                            <input id="cam-yaw" type="range" min="-180" max="180" value="45" class="w-full">
+                        </div>
+                        
+                        <div>
+                            <span class="text-xs text-gray-400">Vertical (Pitch)</span>
+                            <input id="cam-pitch" type="range" min="-89" max="89" value="20" class="w-full">
+                        </div>
+                    </div>
+                    
+                    <label class="text-[10px] text-gray-500 uppercase font-bold tracking-wider block pt-2">
+                        Animation
+                    </label>
+                    
+                    <div>
+                        <span class="text-xs text-gray-400">Rotation Speed</span>
+                        <input id="rot-speed" type="range" min="0" max="200" value="50" class="w-full">
+                    </div>
+                    
+                    <div>
+                        <span class="text-xs text-gray-400">GIF Playback Speed</span>
+                        <input id="gif-speed" type="range" min="10" max="200" value="50" class="w-full">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Export Features -->
+            <div class="space-y-3 pt-4 border-t border-white/10">
+                <label class="text-[10px] text-gray-500 uppercase font-bold tracking-wider block">
+                    Camera Mode
+                </label>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="mode-turntable" class="glass-btn glass-btn-active text-xs py-2 rounded-lg">
+                        Turntable
+                    </button>
+                    <button id="mode-static" class="glass-btn text-xs py-2 rounded-lg">
+                        Static
+                    </button>
+                </div>
+                
+                <button id="lock-camera" class="glass-btn text-xs py-2 rounded-lg w-full">
+                    Lock Camera
+                </button>
+                
+                <label class="text-[10px] text-gray-500 uppercase font-bold tracking-wider block pt-2">
+                    Camera Presets
+                </label>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="glass-btn text-xs py-2 rounded-lg preset" data-yaw="0" data-pitch="0">Front</button>
+                    <button class="glass-btn text-xs py-2 rounded-lg preset" data-yaw="45" data-pitch="30">Isometric</button>
+                    <button class="glass-btn text-xs py-2 rounded-lg preset" data-yaw="0" data-pitch="89">Top</button>
+                    <button class="glass-btn text-xs py-2 rounded-lg preset" data-yaw="135" data-pitch="20">Hero</button>
+                </div>
+                
+                <button id="transparent-bg" class="glass-btn text-xs py-2 rounded-lg w-full">
+                    Transparent Background
+                </button>
             </div>
 
             <!-- Resize Visual Indicator -->
@@ -254,6 +321,13 @@
         let isRecording = false;
         let currentTexture = null;
         let currentGeoType = 'cube';
+        let cameraLocked = false;
+        let cameraMode = 'turntable'; // 'turntable' | 'static'
+        let transparentBackground = false;
+        let camYaw = 45;
+        let camPitch = 20;
+        let rotationSpeed = 0.005;
+        let gifDelay = 50;
 
         // --- INIT ---
         function init() {
@@ -386,9 +460,31 @@
             requestAnimationFrame(animate);
             if (!isRecording) {
                 controls.update();
-                if (isAutoRotating && mainMesh) mainMesh.rotation.y += 0.005;
+                if (isAutoRotating && mainMesh) {
+                    if (cameraMode === 'turntable') {
+                        mainMesh.rotation.y += rotationSpeed;
+                    } else {
+                        camYaw += rotationSpeed * 50;
+                        applyCameraAngle();
+                    }
+                }
             }
+            
             renderer.render(scene, camera);
+        }
+
+        function applyCameraAngle() {
+            const radius = camera.position.length();
+            const phi = THREE.MathUtils.degToRad(90 - camPitch);
+            const theta = THREE.MathUtils.degToRad(camYaw);
+            
+            camera.position.set(
+                radius * Math.sin(phi) * Math.cos(theta),
+                radius * Math.cos(phi),
+                radius * Math.sin(phi) * Math.sin(theta)
+            );
+            
+            camera.lookAt(0, 0, 0);
         }
 
         // --- DRAG LOGIC ---
@@ -399,6 +495,7 @@
 
         // Use 'pointerdown' to catch both Mouse and Touch
         header.addEventListener('pointerdown', (e) => {
+            
           // Ignore if clicking the minimize button
           if (e.target.closest('#minimize-btn')) return;
           isDragging = true;
@@ -463,6 +560,7 @@
             
             const icon = minBtn.querySelector('i');
             if (isMinimized) {
+                
                 // If minimized, reset width to default small width
                 draggable.style.height = ''; 
             }
@@ -485,6 +583,14 @@
             const originalPos = camera.position.clone();
             const originalRot = mainMesh.rotation.y;
             const originalRatio = renderer.getPixelRatio();
+            const originalClearColor = renderer.getClearColor(new THREE.Color()).clone();
+            const originalClearAlpha = renderer.getClearAlpha();
+            
+            if (transparentBackground) {
+                renderer.setClearColor(0x000000, 0);
+            } else {
+                renderer.setClearColor(0x000000, 1);
+            }
             
             renderer.setPixelRatio(1);
             renderer.setSize(400, 400);
@@ -492,8 +598,8 @@
             
             // Adjust camera dist based on shape size
             const dist = currentGeoType === 'sphere' ? 3.5 : 5;
-            camera.position.set(0, 0, dist);
-            camera.lookAt(0,0,0);
+            applyCameraAngle();
+            camera.updateProjectionMatrix();
             camera.updateProjectionMatrix();
 
             const frames = 40; // 40 frames for speed
@@ -503,7 +609,7 @@
                 for(let i=0; i<frames; i++) {
                     mainMesh.rotation.y = i * step;
                     renderer.render(scene, camera);
-                    gif.addFrame(renderer.domElement, {delay: 50, copy: true});
+                    gif.addFrame(renderer.domElement, {delay: gifDelay, copy: true});
                     pBar.style.width = `${(i/frames)*50}%`;
                 }
 
@@ -521,6 +627,7 @@
                     camera.position.copy(originalPos);
                     camera.updateProjectionMatrix();
                     mainMesh.rotation.y = originalRot;
+                    renderer.setClearColor(originalClearColor, originalClearAlpha);
                     document.getElementById('recording-overlay').classList.add('hidden');
                     isRecording = false;
                 });
@@ -545,6 +652,25 @@
             }
         });
 
+        document.querySelectorAll('.preset').forEach(btn => {
+            btn.addEventListener('click', () => {
+                camYaw = parseFloat(btn.dataset.yaw);
+                camPitch = parseFloat(btn.dataset.pitch);
+                
+                document.getElementById('cam-yaw').value = camYaw;
+                document.getElementById('cam-pitch').value = camPitch;
+                applyCameraAngle();
+            });
+        });
+
+        document.getElementById('transparent-bg').addEventListener('click', function () {
+            transparentBackground = !transparentBackground;
+            this.classList.toggle('glass-btn-active', transparentBackground);
+            this.innerText = transparentBackground
+                ? 'Transparent BG'
+                : 'Transparent Background';
+        });
+
         document.getElementById('toggle-rotate').addEventListener('click', function() {
             isAutoRotating = !isAutoRotating;
             this.querySelector('span').innerText = isAutoRotating ? "Pause" : "Rotate";
@@ -567,14 +693,50 @@
 
         document.getElementById('zoom-in').addEventListener('click', () => { camera.position.multiplyScalar(0.9); });
         document.getElementById('zoom-out').addEventListener('click', () => { camera.position.multiplyScalar(1.1); });
-
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Start
+        document.getElementById('lock-camera').addEventListener('click', function () {
+            cameraLocked = !cameraLocked;
+            controls.enabled = !cameraLocked;
+            this.classList.toggle('glass-btn-active', cameraLocked);
+            this.innerText = cameraLocked ? 'Camera Locked' : 'Lock Camera';
+        });
+
+        document.getElementById('mode-turntable').addEventListener('click', () => {
+            cameraMode = 'turntable';
+            document.getElementById('mode-turntable').classList.add('glass-btn-active');
+            document.getElementById('mode-static').classList.remove('glass-btn-active');
+        });
+        
+        document.getElementById('mode-static').addEventListener('click', () => {
+            cameraMode = 'static';
+            document.getElementById('mode-static').classList.add('glass-btn-active');
+            document.getElementById('mode-turntable').classList.remove('glass-btn-active');
+        });
+
+        document.getElementById('cam-yaw').addEventListener('input', e => {
+            camYaw = parseFloat(e.target.value);
+            applyCameraAngle();
+        });
+        
+        document.getElementById('cam-pitch').addEventListener('input', e => {
+            camPitch = parseFloat(e.target.value);
+            applyCameraAngle();
+        });
+        
+        document.getElementById('rot-speed').addEventListener('input', e => {
+            rotationSpeed = parseFloat(e.target.value) / 10000;
+        });
+        
+        document.getElementById('gif-speed').addEventListener('input', e => {
+            gifDelay = parseInt(e.target.value);
+        });
+
+        // Start The App.
         init();
     </script>
 </body>
