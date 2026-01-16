@@ -3,18 +3,30 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>3D Model Viewer [Pro]</title>
+    <title>3D Model Studio</title>
 
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- Three.js -->
+    <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+
+    <!-- GIF.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
 
+    <!-- Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
         
         body {
             font-family: 'Inter', sans-serif;
@@ -25,27 +37,25 @@
 
         /* --- Glass Panel Styling --- */
         .glass-panel {
-            background: rgba(20, 20, 25, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-            transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-            overflow: hidden;
+            background: rgba(20, 20, 25, 0.9);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+            transition: opacity 0.2s ease; 
         }
 
         .glass-btn {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(4px);
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
+            color: #d1d5db;
             transition: all 0.2s;
         }
-        .glass-btn:hover { background: rgba(255, 255, 255, 0.15); }
-        .glass-btn:active { transform: scale(0.95); }
+        .glass-btn:hover { background: rgba(255, 255, 255, 0.1); color: white; }
+        .glass-btn:active { transform: scale(0.96); }
 
         .glass-btn-active {
-            background: rgba(99, 102, 241, 0.3); /* Indigo tint */
+            background: rgba(99, 102, 241, 0.25);
             border-color: rgba(99, 102, 241, 0.5);
             color: #e0e7ff;
         }
@@ -59,36 +69,53 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
         }
         .glass-group-btn {
             padding: 12px;
             color: #e5e7eb;
             transition: background 0.2s;
-            display: flex;
-            align-items: center; justify-content: center;
+            display: flex; align-items: center; justify-content: center;
         }
         .glass-group-btn:hover { background: rgba(255, 255, 255, 0.15); }
         .glass-divider { height: 1px; width: 100%; background: rgba(255, 255, 255, 0.1); }
 
-        /* --- Draggable & Minimized States --- */
+        /* --- Draggable Panel --- */
         #draggable-panel {
             position: absolute;
-            top: 24px; left: 24px;
-            width: 340px;
-            /* Height is auto normally */
+            top: 40px; left: 40px;
+            width: 320px;
+            min-width: 260px;
+            min-height: 80px;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            resize: both;
+            overflow: hidden;
         }
-        
-        .panel-header { cursor: grab; }
-        .panel-header:active { cursor: grabbing; }
 
-        .minimized .panel-content {
-            display: none;
+        /* Custom Drag Handle for Resize */
+        #draggable-panel::-webkit-resizer {
+            background-color: transparent;
         }
+        /* Custom Corner visual */
+        .resize-handle {
+            position: absolute;
+            bottom: 0; right: 0;
+            width: 16px; height: 16px;
+            cursor: nwse-resize;
+            background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.3) 50%);
+            pointer-events: none;
+        }
+
+        /* Minimized State */
         .minimized {
-            height: 64px !important; /* Header height only */
+            height: 56px !important;
             width: 200px !important;
+            resize: none !important;
         }
+        .minimized .panel-content { display: none; }
+        .minimized .resize-handle { display: none; }
 
         input[type="file"] { display: none; }
         .hidden-ui { opacity: 0; pointer-events: none; }
@@ -96,42 +123,50 @@
     </style>
 </head>
 
-<body class="text-white h-screen w-screen relative">
+<body class="text-white h-screen w-screen relative bg-[#0f0f11]">
 
-    <div id="canvas-container" class="absolute inset-0 z-0 bg-gradient-to-b from-gray-900 to-black cursor-move"></div>
+    <!-- Canvas -->
+    <div id="canvas-container" class="absolute inset-0 z-0 bg-gradient-to-b from-gray-900 to-[#050505] cursor-move"></div>
 
-    <div id="recording-overlay" class="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center hidden">
+    <!-- Recording Overlay -->
+    <div id="recording-overlay" class="absolute inset-0 z-[100] bg-black/80 backdrop-blur-md flex flex-col items-center justify-center hidden">
         <div class="glass-panel p-8 rounded-2xl flex flex-col items-center max-w-xs w-full text-center border-indigo-500/30">
             <div class="relative w-16 h-16 mb-4">
                 <div class="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
                 <div class="absolute inset-0 border-4 border-indigo-500 rounded-full border-t-transparent animate-spin"></div>
                 <i data-lucide="aperture" class="absolute inset-0 m-auto w-6 h-6 text-indigo-400"></i>
             </div>
-            <h2 id="rec-status-title" class="text-xl font-bold text-white mb-2">Recording...</h2>
+            <h2 class="text-xl font-bold text-white mb-2">Recording...</h2>
             <div class="w-full h-2 bg-gray-700 rounded-full overflow-hidden mb-2">
                 <div id="rec-progress" class="h-full bg-indigo-500 progress-bar" style="width: 0%"></div>
             </div>
+            <p class="text-xs text-gray-400 mt-2">Generating seamless loop</p>
         </div>
     </div>
 
-    <div class="absolute inset-0 z-10 pointer-events-none">
+    <!-- UI Layer -->
+    <div class="absolute inset-0 z-10 pointer-events-none overflow-hidden">
         
-        <div id="draggable-panel" class="glass-panel rounded-2xl pointer-events-auto flex flex-col">
+        <!-- DRAGGABLE & RESIZABLE PANEL -->
+        <div id="draggable-panel" class="glass-panel rounded-2xl pointer-events-auto">
             
-            <div id="panel-header" class="panel-header flex items-center justify-between p-4 border-b border-white/5 bg-white/5">
+            <!-- Header (Drag Handle) -->
+            <div id="panel-header" class="flex items-center justify-between px-4 py-3 bg-white/5 border-b border-white/5 cursor-grab active:cursor-grabbing shrink-0">
                 <div class="flex items-center gap-2">
-                    <i data-lucide="grip-vertical" class="w-4 h-4 text-gray-500"></i>
-                    <span class="font-semibold text-sm tracking-wide text-gray-200">Model Studio</span>
+                    <i data-lucide="layers" class="w-4 h-4 text-indigo-400"></i>
+                    <span class="font-semibold text-sm tracking-wide text-gray-200">Modal Studio</span>
                 </div>
-                <button id="minimize-btn" class="text-gray-400 hover:text-white transition-colors">
-                    <i data-lucide="chevron-down" id="min-icon" class="w-4 h-4 transition-transform duration-300"></i>
+                <button id="minimize-btn" class="p-1 text-gray-400 hover:text-white transition-colors rounded hover:bg-white/10">
+                    <i data-lucide="minus" class="w-4 h-4"></i>
                 </button>
             </div>
 
-            <div class="panel-content p-4 space-y-5">
+            <!-- Scrollable Content -->
+            <div class="panel-content p-4 space-y-5 overflow-y-auto custom-scrollbar h-full">
                 
+                <!-- Shape Selector -->
                 <div>
-                    <label class="text-xs text-gray-500 uppercase font-bold tracking-wider mb-2 block">Shape</label>
+                    <label class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-2 block">Geometry/Shapes</label>
                     <div class="grid grid-cols-4 gap-2">
                         <button onclick="changeShape('cube')" id="btn-cube" class="glass-btn glass-btn-active p-2 rounded-lg flex justify-center" title="Cube"><i data-lucide="box" class="w-5 h-5"></i></button>
                         <button onclick="changeShape('sphere')" id="btn-sphere" class="glass-btn p-2 rounded-lg flex justify-center" title="Sphere"><i data-lucide="circle" class="w-5 h-5"></i></button>
@@ -140,48 +175,60 @@
                     </div>
                 </div>
 
+                <!-- Main Actions -->
                 <div class="space-y-3">
-                    <label for="upload" class="glass-btn cursor-pointer w-full flex items-center justify-center gap-2 bg-indigo-600/80 hover:bg-indigo-500/90 py-3 rounded-xl font-medium shadow-lg shadow-indigo-500/20 !border-indigo-400/30">
+                    <label for="upload" class="glass-btn cursor-pointer w-full flex items-center justify-center gap-2 bg-indigo-600/20 hover:bg-indigo-600/30 py-3 rounded-xl font-medium border-indigo-500/30 text-indigo-200 hover:text-indigo-100 transition-colors">
                         <i data-lucide="image-plus" class="w-4 h-4"></i>
-                        <span class="text-sm">Upload Texture</span>
+                        <span class="text-sm">Upload/Load Texture</span>
                     </label>
                     <input type="file" id="upload" accept="image/*" />
 
                     <button id="record-gif" class="glass-btn w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium bg-rose-500/10 hover:bg-rose-500/20 border-rose-500/20 text-rose-300">
                         <i data-lucide="film" class="w-4 h-4"></i>
-                        <span class="text-sm">Export Loop</span>
+                        <span class="text-sm">Export GIF</span>
                     </button>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 pt-2 border-t border-white/5">
-                    <button id="toggle-rotate" class="glass-btn flex items-center justify-center gap-2 py-2 rounded-lg text-xs">
-                        <i data-lucide="rotate-3d" class="w-3 h-3"></i>
-                        <span id="rotate-text">Pause</span>
-                    </button>
-                    <button id="reset-cam" class="glass-btn flex items-center justify-center gap-2 py-2 rounded-lg text-xs">
-                        <i data-lucide="camera" class="w-3 h-3"></i>
-                        <span>Reset</span>
-                    </button>
+                <!-- Transformation Controls -->
+                <div>
+                    <label class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-2 block">Controls</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="toggle-rotate" class="glass-btn flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs">
+                            <i data-lucide="rotate-3d" class="w-3 h-3"></i>
+                            <span id="rotate-text">Pause</span>
+                        </button>
+                        <button id="reset-cam" class="glass-btn flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs">
+                            <i data-lucide="camera" class="w-3 h-3"></i>
+                            <span>Reset CamPos</span>
+                        </button>
+                    </div>
                 </div>
             </div>
+
+            <!-- Resize Visual Indicator -->
+            <div class="resize-handle"></div>
         </div>
 
-        <div class="absolute top-6 right-6 pointer-events-auto">
-            <button id="visibility-toggle" class="glass-btn p-3 rounded-full shadow-xl group">
+        <!-- Right Side UI -->
+        <div class="absolute top-6 right-6 pointer-events-auto flex flex-col gap-4">
+            <button id="visibility-toggle" class="glass-btn p-3 rounded-full shadow-xl group bg-black/40 border-white/5">
                 <i data-lucide="eye" id="vis-icon" class="w-5 h-5 group-hover:text-indigo-300"></i>
             </button>
         </div>
 
-        <div class="absolute bottom-10 left-6 right-6 flex items-end justify-between pointer-events-auto" id="bottom-controls">
-            <div class="glass-panel px-4 py-2 rounded-full flex items-center gap-3 shadow-lg">
+        <!-- Bottom UI -->
+        <div class="absolute bottom-8 left-6 right-6 flex items-end justify-between pointer-events-auto" id="bottom-controls">
+            <!-- Info Pill -->
+            <div class="glass-panel px-4 py-2 rounded-full flex items-center gap-3 shadow-lg bg-black/40 border-white/5">
                 <div class="relative flex h-2 w-2">
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </div>
-                <span class="text-xs text-gray-300 font-mono" id="poly-count">Triangles: 12</span>
+                <span class="text-xs text-gray-300 font-mono tracking-wide" id="poly-count">Triangles: 12</span>
             </div>
 
-            <div class="glass-group">
+            <!-- Zoom Controls -->
+            <div class="glass-group bg-black/40 border-white/5">
                 <button id="zoom-in" class="glass-group-btn" title="Zoom In"><i data-lucide="plus" class="w-5 h-5"></i></button>
                 <div class="glass-divider"></div>
                 <button id="zoom-out" class="glass-group-btn" title="Zoom Out"><i data-lucide="minus" class="w-5 h-5"></i></button>
@@ -189,21 +236,26 @@
         </div>
     </div>
 
-    <script>
+    <!-- Main Logic -->
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
         lucide.createIcons();
 
-        // --- GLOBAL VARIABLES ---
+        // --- STATE ---
         let scene, camera, renderer, mainMesh, controls;
         let isAutoRotating = true;
         let isRecording = false;
         let currentTexture = null;
         let currentGeoType = 'cube';
 
-        // --- INIT THREE.JS ---
+        // --- INIT ---
         function init() {
             const container = document.getElementById('canvas-container');
+            
             scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x000000, 0.035);
+            scene.fog = new THREE.FogExp2(0x0f0f11, 0.03);
 
             camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
             camera.position.set(4, 3, 5);
@@ -214,32 +266,35 @@
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
             container.appendChild(renderer.domElement);
 
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls = new OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
 
             // Lights
-            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-            const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+            
+            const mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
             mainLight.position.set(5, 10, 7);
+            mainLight.castShadow = true;
             scene.add(mainLight);
-            const rimLight = new THREE.DirectionalLight(0x6366f1, 0.8);
-            rimLight.position.set(-5, 0, -5);
-            scene.add(rimLight);
 
-            // Grid
-            const grid = new THREE.GridHelper(20, 20, 0x333333, 0x111111);
-            grid.position.y = -1.5;
+            const fillLight = new THREE.DirectionalLight(0x6366f1, 0.8);
+            fillLight.position.set(-5, 2, -5);
+            scene.add(fillLight);
+
+            // Floor Grid
+            const grid = new THREE.GridHelper(30, 30, 0x333333, 0x151515);
+            grid.position.y = -2;
             scene.add(grid);
 
-            // Initial Object
+            // Default Texture
             currentTexture = createDefaultTexture();
             createMesh('cube');
 
             animate();
         }
 
-        // --- SHAPE LOGIC ---
+        // --- GEOMETRY FACTORY ---
         function createMesh(type) {
             if (mainMesh) {
                 scene.remove(mainMesh);
@@ -248,29 +303,41 @@
 
             let geometry;
             switch(type) {
-                case 'cube': geometry = new THREE.BoxGeometry(2,2,2); break;
-                case 'sphere': geometry = new THREE.SphereGeometry(1.2, 64, 64); break;
-                case 'capsule': geometry = new THREE.CapsuleGeometry(0.8, 1.5, 4, 16); break;
-                case 'torus': geometry = new THREE.TorusGeometry(1, 0.4, 16, 64); break;
+                case 'cube': 
+                    geometry = new THREE.BoxGeometry(2,2,2); 
+                    break;
+                case 'sphere': 
+                    geometry = new THREE.SphereGeometry(1.3, 64, 64); 
+                    break;
+                case 'capsule': 
+                    // Requires Three.js > r137
+                    geometry = new THREE.CapsuleGeometry(0.8, 2, 8, 16); 
+                    break;
+                case 'torus': 
+                    geometry = new THREE.TorusGeometry(1, 0.4, 32, 100); 
+                    break;
             }
 
             const material = new THREE.MeshStandardMaterial({
                 map: currentTexture,
                 roughness: 0.2,
-                metalness: 0.1
+                metalness: 0.1,
             });
 
             mainMesh = new THREE.Mesh(geometry, material);
             scene.add(mainMesh);
             
-            // Update UI Counters
-            document.getElementById('poly-count').innerText = `Triangles: ${geometry.attributes.position.count / 3}`;
+            // Update Poly Count
+            const count = geometry.attributes.position.count / 3;
+            document.getElementById('poly-count').innerText = `Triangles: ${Math.floor(count)}`;
+            
             currentGeoType = type;
             updateShapeButtons(type);
         }
 
+        // Export to window for HTML buttons
         window.changeShape = (type) => {
-            const rotY = mainMesh ? mainMesh.rotation.y : 0; // Preserve rotation
+            const rotY = mainMesh ? mainMesh.rotation.y : 0;
             createMesh(type);
             mainMesh.rotation.y = rotY;
         }
@@ -289,27 +356,27 @@
             const grd = ctx.createLinearGradient(0, 0, 512, 512);
             grd.addColorStop(0, "#4f46e5"); grd.addColorStop(1, "#312e81");
             ctx.fillStyle = grd; ctx.fillRect(0,0,512,512);
-            ctx.strokeStyle = "rgba(255,255,255,0.1)"; ctx.lineWidth = 4;
-            ctx.strokeRect(0,0,512,512);
             
-            // Grid lines on texture
-            ctx.beginPath();
-            for(let i=0; i<=512; i+=64) {
-                ctx.moveTo(i,0); ctx.lineTo(i,512);
-                ctx.moveTo(0,i); ctx.lineTo(512,i);
+            ctx.strokeStyle = "rgba(255,255,255,0.05)"; ctx.lineWidth = 2;
+            for(let i=0; i<=512; i+=32) {
+                ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,512); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(512,i); ctx.stroke();
             }
-            ctx.stroke();
+
+            ctx.strokeStyle = "rgba(255,255,255,0.8)"; ctx.lineWidth = 8;
+            ctx.strokeRect(20,20,472,472);
 
             ctx.fillStyle = '#ffffff'; ctx.font = 'bold 40px Inter, sans-serif'; 
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.shadowColor="rgba(0,0,0,0.5)"; ctx.shadowBlur=10;
             ctx.fillText('DROP IMAGE', 256, 256);
             
             const tex = new THREE.CanvasTexture(ctx.canvas);
-            tex.encoding = THREE.sRGBEncoding;
+            tex.colorSpace = THREE.SRGBColorSpace; // New syntax for color space
             return tex;
         }
 
-        // --- ANIMATION LOOP ---
+        // --- ANIMATION ---
         function animate() {
             requestAnimationFrame(animate);
             if (!isRecording) {
@@ -319,68 +386,91 @@
             renderer.render(scene, camera);
         }
 
-        // --- DRAGGABLE PANEL LOGIC ---
+        // --- DRAG LOGIC (IMPROVED) ---
         const draggable = document.getElementById('draggable-panel');
-        const handle = document.getElementById('panel-header');
+        const header = document.getElementById('panel-header');
         let isDragging = false;
         let dragOffset = { x: 0, y: 0 };
 
-        handle.addEventListener('mousedown', startDrag);
-        document.addEventListener('mousemove', drag);
-        document.addEventListener('mouseup', endDrag);
+        // Allow drag from header OR any empty space in panel
+        draggable.addEventListener('mousedown', startDrag);
 
         function startDrag(e) {
-            // Prevent dragging if clicking the minimize button
-            if(e.target.closest('button')) return; 
+            // Don't drag if clicking buttons, inputs, or resize handle
+            if(e.target.closest('button') || e.target.closest('input') || e.target.closest('label')) return;
             
+            // Check if near bottom right corner (Resize zone)
+            const rect = draggable.getBoundingClientRect();
+            if (e.clientX > rect.right - 20 && e.clientY > rect.bottom - 20) return;
+
             isDragging = true;
-            dragOffset.x = e.clientX - draggable.offsetLeft;
-            dragOffset.y = e.clientY - draggable.offsetTop;
-            handle.style.cursor = 'grabbing';
+            
+            // Calculate offset relative to the element's current position
+            dragOffset.x = e.clientX - rect.left;
+            dragOffset.y = e.clientY - rect.top;
+            
+            draggable.style.cursor = 'grabbing';
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', endDrag);
         }
 
         function drag(e) {
             if (!isDragging) return;
-            e.preventDefault();
+            e.preventDefault(); // Prevent text selection
             
-            // Boundaries
-            const x = Math.max(0, Math.min(window.innerWidth - draggable.offsetWidth, e.clientX - dragOffset.x));
-            const y = Math.max(0, Math.min(window.innerHeight - draggable.offsetHeight, e.clientY - dragOffset.y));
+            // Calculate new position
+            let x = e.clientX - dragOffset.x;
+            let y = e.clientY - dragOffset.y;
+
+            // Simple bounds checking
+            x = Math.max(0, Math.min(window.innerWidth - 50, x));
+            y = Math.max(0, Math.min(window.innerHeight - 50, y));
 
             draggable.style.left = `${x}px`;
             draggable.style.top = `${y}px`;
+            
+            // IMPORTANT: Clear bottom/right if they were set, to allow free movement
+            draggable.style.bottom = 'auto';
+            draggable.style.right = 'auto';
         }
 
         function endDrag() {
             isDragging = false;
-            handle.style.cursor = 'grab';
+            draggable.style.cursor = 'auto';
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', endDrag);
         }
 
         // --- MINIMIZE LOGIC ---
         const minBtn = document.getElementById('minimize-btn');
-        const minIcon = document.getElementById('min-icon');
         let isMinimized = false;
 
-        minBtn.addEventListener('click', () => {
+        minBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent drag start
             isMinimized = !isMinimized;
             draggable.classList.toggle('minimized', isMinimized);
-            minIcon.style.transform = isMinimized ? 'rotate(180deg)' : 'rotate(0deg)';
+            
+            const icon = minBtn.querySelector('i');
+            if (isMinimized) {
+                // If minimized, reset width to default small width
+                draggable.style.height = ''; 
+            }
         });
 
-        // --- RECORDING LOGIC ---
+        // --- RECORDING ---
         document.getElementById('record-gif').addEventListener('click', async () => {
             isRecording = true;
             document.getElementById('recording-overlay').classList.remove('hidden');
             const pBar = document.getElementById('rec-progress');
             
-            // Setup GIF
+            // Init GIF
             let workerBlob = await fetch('https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js').then(r=>r.blob()).catch(()=>null);
             const gif = new GIF({
                 workers: 2, quality: 10, width: 400, height: 400,
                 workerScript: workerBlob ? URL.createObjectURL(workerBlob) : 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
             });
 
-            // Isolate Mesh
+            // Isolate render state
             const originalPos = camera.position.clone();
             const originalRot = mainMesh.rotation.y;
             const originalRatio = renderer.getPixelRatio();
@@ -388,11 +478,14 @@
             renderer.setPixelRatio(1);
             renderer.setSize(400, 400);
             camera.aspect = 1; 
-            camera.position.set(0, 0, currentGeoType === 'sphere' ? 3.5 : 5); // Adjust cam dist based on shape
+            
+            // Adjust camera dist based on shape size
+            const dist = currentGeoType === 'sphere' ? 3.5 : 5;
+            camera.position.set(0, 0, dist);
             camera.lookAt(0,0,0);
             camera.updateProjectionMatrix();
 
-            const frames = 50;
+            const frames = 40; // 40 frames for speed
             const step = (Math.PI * 2) / frames;
 
             setTimeout(() => {
@@ -407,10 +500,10 @@
                 gif.on('finished', blob => {
                     const a = document.createElement('a');
                     a.href = URL.createObjectURL(blob);
-                    a.download = `3d-${currentGeoType}-loop.gif`;
+                    a.download = `3d-${currentGeoType}.gif`;
                     a.click();
                     
-                    // Reset State
+                    // Reset
                     renderer.setPixelRatio(originalRatio);
                     renderer.setSize(window.innerWidth, window.innerHeight);
                     camera.aspect = window.innerWidth/window.innerHeight;
@@ -421,17 +514,17 @@
                     isRecording = false;
                 });
                 gif.render();
-            }, 100);
+            }, 50);
         });
 
-        // --- OTHER EVENTS ---
+        // --- EVENTS ---
         document.getElementById('upload').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if(file){
                 const reader = new FileReader();
                 reader.onload = (ev) => {
                     new THREE.TextureLoader().load(ev.target.result, (tex) => {
-                        tex.encoding = THREE.sRGBEncoding;
+                        tex.colorSpace = THREE.SRGBColorSpace;
                         currentTexture = tex;
                         mainMesh.material.map = tex;
                         mainMesh.material.needsUpdate = true;
@@ -448,6 +541,7 @@
         });
 
         document.getElementById('reset-cam').addEventListener('click', () => controls.reset());
+        
         document.getElementById('visibility-toggle').addEventListener('click', () => {
             const ui = document.getElementById('draggable-panel');
             const bottom = document.getElementById('bottom-controls');
@@ -469,6 +563,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
+        // Start
         init();
     </script>
 </body>
