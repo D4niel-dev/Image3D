@@ -255,41 +255,43 @@
                 </button>
                 
                 <!-- Collapsible Content -->
-                <div id="advanced-content" class="hidden space-y-3 pt-2">
-                    
-                    <!-- Camera Mode -->
-                    <label class="text-[10px] text-gray-500 uppercase font-bold tracking-wider block pt-2">
-                        Camera Mode
-                    </label>
-                    
-                    <div class="grid grid-cols-2 gap-2">
-                        <button id="mode-turntable" class="glass-btn glass-btn-active text-xs py-2 rounded-lg">
-                            Turntable
+                <div id="advanced-content" class="hidden pt-3">
+                    <div class="space-y-4 px-1">
+                        
+                        <!-- Camera Mode -->
+                        <label class="text-[10px] text-gray-500 uppercase font-bold tracking-wider block pt-2">
+                            Camera Mode
+                        </label>
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="mode-turntable" class="glass-btn glass-btn-active text-xs py-2 rounded-lg mx-0.5">
+                                Turntable
+                            </button>
+                            <button id="mode-static" class="glass-btn text-xs py-2 rounded-lg mx-0.5">
+                                Static
+                            </button>
+                        </div>
+                        
+                        <button id="lock-camera" class="glass-btn text-xs py-2 rounded-lg mx-0.5 w-full">
+                            Lock Camera
                         </button>
-                        <button id="mode-static" class="glass-btn text-xs py-2 rounded-lg">
-                            Static
+                        
+                        <!-- Camera Presets -->
+                        <label class="text-[10px] text-gray-500 uppercase font-bold tracking-wider block pt-2">
+                            Camera Presets
+                        </label>
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <button class="glass-btn text-xs py-2 rounded-lg mx-0.5 preset" data-yaw="0" data-pitch="0">Front</button>
+                            <button class="glass-btn text-xs py-2 rounded-lg mx-0.5 preset" data-yaw="45" data-pitch="30">Isometric</button>
+                            <button class="glass-btn text-xs py-2 rounded-lg mx-0.5 preset" data-yaw="0" data-pitch="89">Top</button>
+                            <button class="glass-btn text-xs py-2 rounded-lg mx-0.5 preset" data-yaw="135" data-pitch="20">Hero</button>
+                        </div>
+                        
+                        <button id="transparent-bg" class="glass-btn text-xs py-2 rounded-lg mx-0.5 w-full">
+                            Transparent Background
                         </button>
                     </div>
-                    
-                    <button id="lock-camera" class="glass-btn text-xs py-2 rounded-lg w-full">
-                        Lock Camera
-                    </button>
-                    
-                    <!-- Camera Presets -->
-                    <label class="text-[10px] text-gray-500 uppercase font-bold tracking-wider block pt-2">
-                        Camera Presets
-                    </label>
-                    
-                    <div class="grid grid-cols-2 gap-2">
-                        <button class="glass-btn text-xs py-2 rounded-lg preset" data-yaw="0" data-pitch="0">Front</button>
-                        <button class="glass-btn text-xs py-2 rounded-lg preset" data-yaw="45" data-pitch="30">Isometric</button>
-                        <button class="glass-btn text-xs py-2 rounded-lg preset" data-yaw="0" data-pitch="89">Top</button>
-                        <button class="glass-btn text-xs py-2 rounded-lg preset" data-yaw="135" data-pitch="20">Hero</button>
-                    </div>
-                    
-                    <button id="transparent-bg" class="glass-btn text-xs py-2 rounded-lg w-full">
-                        Transparent Background
-                    </button>
                 </div>
             </div>
 
