@@ -98,6 +98,10 @@
         #draggable-panel::-webkit-resizer {
             background-color: transparent;
         }
+        #bottom-controls {
+          z-index: 40;
+        }
+        
         /* Custom Corner visual */
         .resize-handle {
             position: absolute;
@@ -321,31 +325,41 @@
         </div>
 
         <!-- Right Side UI -->
-        <div class="absolute top-6 right-6 pointer-events-auto flex flex-col gap-4">
+        <div class="absolute top-3 right-3 pointer-events-auto flex flex-col gap-4 z-50">
             <button id="visibility-toggle" class="glass-btn p-3 rounded-full shadow-xl group bg-black/40 border-white/5">
                 <i data-lucide="eye" id="vis-icon" class="w-5 h-5 group-hover:text-indigo-300"></i>
             </button>
         </div>
 
         <!-- Bottom UI -->
-        <div class="absolute bottom-20 left-6 right-6 flex items-end justify-between pointer-events-auto" id="bottom-controls">
-            <!-- Info Pill -->
-            <div class="glass-panel px-4 py-2 rounded-full flex items-center gap-3 shadow-lg bg-black/40 border-white/5">
-                <div class="relative flex h-2 w-2">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </div>
-                <span class="text-xs text-gray-300 font-mono tracking-wide" id="poly-count">Triangles: 12</span>
-            </div>
+        <div class="absolute bottom-6 left-6 right-6 flex items-end justify-between pointer-events-auto z-40" id="bottom-controls">
 
+            <!-- Triangle Count -->
+            <div class="absolute bottom-6 left-6 pointer-events-auto z-40" id="bottom-controls">
+                <div class="glass-panel px-4 py-2 rounded-full flex items-center gap-3 shadow-lg bg-black/40 border-white/5">
+                    <div class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </div>
+                    <span class="text-xs text-gray-300 font-mono tracking-wide" id="poly-count">
+                        Triangles: 12
+                    </span>
+                </div>
+            </div>
+            
             <!-- Zoom Controls -->
-            <div class="glass-group bg-black/40 border-white/5">
-                <button id="zoom-in" class="glass-group-btn" title="Zoom In"><i data-lucide="plus" class="w-5 h-5"></i></button>
-                <div class="glass-divider"></div>
-                <button id="zoom-out" class="glass-group-btn" title="Zoom Out"><i data-lucide="minus" class="w-5 h-5"></i></button>
+            <div class="absolute bottom-6 right-6 pointer-events-auto z-40">
+                <div class="glass-group bg-black/40 border-white/5">
+                    <button id="zoom-in" class="glass-group-btn" title="Zoom In">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                    </button>
+                    <div class="glass-divider"></div>
+                    <button id="zoom-out" class="glass-group-btn" title="Zoom Out">
+                        <i data-lucide="minus" class="w-5 h-5"></i>
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
 
     <!-- Main Logic -->
     <script type="module">
