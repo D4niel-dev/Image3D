@@ -1,0 +1,91 @@
+/* --- Mobile Overrides (Obsidian Dock) --- */
+@media (max-width: 768px) {
+    
+    /* Hide Desktop Panel */
+    #draggable-panel {
+        display: none !important;
+    }
+
+    /* Bottom Dock */
+    #mobile-dock {
+        position: absolute;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex; /* Flex required here */
+        gap: 12px;
+        padding: 10px 16px;
+        background: rgba(10, 10, 12, 0.8);
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        z-index: 100;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .dock-btn {
+        width: 44px; height: 44px;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.05);
+        color: var(--text-secondary);
+        border: 1px solid transparent;
+        transition: all 0.2s var(--ease-elastic);
+    }
+    
+    .dock-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.1); }
+    .dock-btn.active { 
+        background: var(--accent-primary); 
+        color: white; 
+        box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    /* Bottom Sheet */
+    #bottom-sheet {
+        position: fixed;
+        bottom: 0; left: 0; width: 100%;
+        max-height: 70vh; /* Don't cover full screen */
+        background: #0f0f11;
+        border-top: 1px solid var(--obsidian-border);
+        border-top-left-radius: 24px;
+        border-top-right-radius: 24px;
+        z-index: 200;
+        transform: translateY(105%); /* Hidden by default */
+        transition: transform 0.4s var(--ease-elastic);
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 -10px 50px rgba(0,0,0,0.8);
+    }
+
+    #bottom-sheet.open {
+        transform: translateY(0);
+    }
+
+    .sheet-handle-area {
+        width: 100%;
+        height: 24px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: grab;
+    }
+    .sheet-handle {
+        width: 40px; height: 4px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 2px;
+    }
+
+    .sheet-content {
+        padding: 24px;
+        padding-top: 0;
+        overflow-y: auto;
+        padding-bottom: 40px; /* Safe area */
+    }
+
+    /* Adjust bottom controls for mobile */
+    #bottom-controls {
+        bottom: 90px; /* Above the dock */
+        padding: 0 20px;
+    }
+    
+    #poly-count { display: none; } /* Hide stats on mobile to save space */
+}
