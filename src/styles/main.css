@@ -196,15 +196,26 @@ body {
 
 /* 1. The Glass Panel */
 .obsidian-panel {
-  background: var(--glass-surface);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  /* Fix Blurring on Glass */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  transform: translateZ(0); /* Force GPU Layer */
-  backface-visibility: hidden;
+    position: relative;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-panel);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.6),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    transition: all 0.4s var(--ease-orbit);
+    overflow: hidden;
+    z-index: 10;
+}
+
+.obsidian-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--glass-surface);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    pointer-events: none;
 }
 
 /* Minimized State */
@@ -372,6 +383,12 @@ input[type="color"] {
   box-shadow: 0 0 0 2px var(--glass-border);
 }
 
+/* Default state for Mobile Dock (Hidden on Desktop) */
+#mobile-dock {
+    display: none;
+}
+
+
 /* --- HUD Elements (Bottom / Right) --- */
 #bottom-controls {
   position: absolute;
@@ -385,40 +402,46 @@ input[type="color"] {
 }
 
 .stat-pill {
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-pill);
-  padding: 10px 24px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-  pointer-events: auto;
+    position: relative;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-pill);
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    pointer-events: auto;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.stat-pill::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 /* PULSE ANIMATION */
 @keyframes pulse-green {
-  0% {
-    box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 6px rgba(0, 230, 118, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(0, 230, 118, 0);
-  }
+    0% { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.7); }
+    70% { box-shadow: 0 0 0 6px rgba(0, 230, 118, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0); }
 }
 
 .stat-pill span.bg-emerald-500 {
-  width: 8px;
-  height: 8px;
-  background-color: #00e676; /* Brighter neon green */
-  border-radius: 50%;
-  box-shadow: 0 0 5px #00e676;
-  animation: pulse-green 2s infinite;
+    display: block;
+    flex-shrink: 0;
+    width: 8px; height: 8px;
+    background-color: #00e676; 
+    border-radius: 50%;
+    box-shadow: 0 0 5px #00e676;
+    animation: pulse-green 2s infinite;
 }
 
 .zoom-group {

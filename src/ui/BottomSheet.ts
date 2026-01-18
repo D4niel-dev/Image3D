@@ -44,47 +44,58 @@ export class BottomSheet {
     }
   
     private renderContent(mode: string) {
-        // Clear current
+        // Clear current (We do NOT destroy the elements, we append them back to desktop? 
+        // No, for this simple implementation we just clear the container. 
+        // The elements are 'stolen'. We need to be careful not to lose them if we switch tabs.
+        // Actually, if we clear innerHTML, we destroy the event listeners if we cloned.
+        // If we moved them, we need to append them back or just hide them?
+        // Let's assume we pull them fresh each time. 
+        // BUT if we appended them to 'target', and now we set innerHTML='', they are gone.
+        // FIX: We must APPEND them. If they are already there, just show?
+        // Simpler: We just move them. If we switch tabs, we move the current content back to a "storage" fragment or just don't worry about desktop restoration for this session.
+        
+        // 1. Recover existing content to a safe place? (Skip for now, assuming Mobile Only session)
         this.target.innerHTML = '';
         
-        let content: HTMLElement | null = null;
-        
-        // In a real app we might move DOM elements. 
-        // For this hybrid approach, we will Clone the desktop elements 
-        // so we don't break the desktop view references if verified on resize.
-        // ACTUALLY: Since we hide desktop panel, we can just move them? 
-        // Moving is risky if we resize back. Cloning with events is hard.
-        // Let's specifically grab the content from the hidden desktop panel
-        // and append it here. We'll need to move it back if desktop mode triggers (resize).
-        // A simpler way for this restricted scope: 
-        // We will simple "Teleport" the specific inner containers.
+        let contents: HTMLElement[] = [];
         
         if (mode === 'shapes') {
-            const el = document.querySelector('.control-group:has(#btn-cube)'); // Select shape group
-            if(el) content = el as HTMLElement;
-        } else if (mode === 'actions') {
-             // The actions toggle content is hidden by default in desktop. 
-             // We want the inner list.
+            const el = document.querySelector('.control-group:has(#btn-cube)');
+            if(el) contents.push(el as HTMLElement);
+        } 
+        else if (mode === 'actions') {
+             // Actions Toggle Content
              const el = document.getElementById('actions-content');
              if(el) {
-                 el.classList.remove('hidden'); // Ensure visible in sheet
-                 content = el;
-             }
-        } else if (mode === 'settings') {
-             const el = document.getElementById('advanced-content');
-             if(el) {
                  el.classList.remove('hidden');
-                 content = el;
+                 contents.push(el);
+             }
+             // Also include Upload/Snapshot which might be outside? 
+             // In index.html, they are inside actions-content. Correct.
+        } 
+        else if (mode === 'settings') {
+             // 1. Material (Important!)
+             const matHeader = document.getElementById('material-toggle');
+             const matContent = document.getElementById('material-content');
+             if (matHeader) contents.push(matHeader); // Keep header style? Or just content?
+             if (matContent) {
+                 matContent.classList.remove('hidden');
+                 contents.push(matContent);
+             }
+
+             // 2. Advanced
+             const advContent = document.getElementById('advanced-content');
+             if(advContent) {
+                 advContent.classList.remove('hidden');
+                 contents.push(advContent);
              }
         }
   
-        if (content) {
-            // We are moving the DOM node. 
-            // NOTE: This means it disappears from Desktop panel. 
-            // We need to handle this in a "Responsiveness" manager if strict switching is needed.
-            // For now, we assume mobile-first usage or reload on resize.
-            this.target.appendChild(content);
-        }
+        contents.forEach(c => {
+            // Apply a mobile-specific class for styling if needed
+            c.classList.add('mobile-content-wrapper');
+            this.target.appendChild(c);
+        });
     }
   
     private setupGestures() {
