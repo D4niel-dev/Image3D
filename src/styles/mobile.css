@@ -1,13 +1,28 @@
 /* --- Mobile Overrides (Obsidian Dock) --- */
 
+/* Tight Layout for Mobile */
 .mobile-content-wrapper {
-    margin-bottom: 8px; /* Reduced specificty spacing */
     width: 100%;
 }
 
-/* Keep Headers close to their content */
+/* Headers: Flush with content below */
 button.mobile-content-wrapper {
-    margin-bottom: 4px;
+    margin-bottom: 0px !important;
+    border-bottom-left-radius: 4px; /* Slight reduce for integration */
+    border-bottom-right-radius: 4px;
+    z-index: 10; /* Above content if overlapping */
+}
+
+/* Content Panels: Connected to header */
+div.mobile-content-wrapper {
+    margin-top: -2px !important; /* Slight overlap to merge borders */
+    margin-bottom: 12px !important; /* Space between sections */
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--glass-border);
+    border-top: none;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
 }
 
 @media (max-width: 768px) {
