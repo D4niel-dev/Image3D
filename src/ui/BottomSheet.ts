@@ -94,16 +94,22 @@ export class BottomSheet {
     }
 
     private restoreContent() {
-        this.currentBorrowed.forEach(item => {
+        // Process in REVERSE order (LIFO) to ensure siblings are restored correctly
+        // (If we borrowed A then B, A's nextSibling is B. We must restore B first so A can be inserted before it)
+        [...this.currentBorrowed].reverse().forEach(item => {
             if (item.element) {
                 item.element.classList.remove('mobile-content-wrapper');
                 // Attempt to put back in original place
                 if (item.parent) {
-                    item.parent.insertBefore(item.element, item.nextSibling);
+                    try {
+                        item.parent.insertBefore(item.element, item.nextSibling);
+                    } catch (e) {
+                        // Fallback: If nextSibling is gone or invalid, just append
+                        console.warn('Restore fallback for', item.element, e);
+                        item.parent.appendChild(item.element);
+                    }
                 } else {
-                    // Fallback if parent lost (rare in this app structure)
-                    // Just append to body hidden or similar? 
-                    // For now, if no parent, we probably don't need to restore strictly.
+                    // Start of app lifecycle or disconnected?
                 }
             }
         });
