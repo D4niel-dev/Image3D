@@ -29,28 +29,17 @@ document.addEventListener('DOMContentLoaded', () => {
     NotificationSystem.show(`Init Failed: ${error.message}`, 'error');
   }
 
-  // Register Service Worker for PWA
-  // Skip on localhost to avoid refresh loops with DevServer
-  if ('serviceWorker' in navigator && window.location.hostname !== 'localhost') {
-    window.addEventListener('load', () => {
-      // Use relative path for GitHub Pages compatibility
-      navigator.serviceWorker.register('./service-worker.js').then(
-        (registration) => {
-          console.log('ServiceWorker registration successful with scope: ', registration.scope);
-        },
-        (err) => {
-          console.log('ServiceWorker registration failed: ', err);
-        }
-      );
+  // KILL SWITCH: Force Unregister All, Service Workers
+  // This is temporary to fix the "Resource was not cached" loop
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      for(let registration of registrations) {
+        registration.unregister();
+        console.log('💀 Killed Zombie Service Worker:', registration.scope);
+      }
+      if (registrations.length === 0) {
+        console.log('✅ No Service Workers found (Clean State)');
+      }
     });
-  } else if (window.location.hostname === 'localhost') {
-      console.log('Service Worker skipped (Localhost)');
-      // Force unregister if exists to clear the loop
-      navigator.serviceWorker.getRegistrations().then((registrations) => {
-          for(let registration of registrations) {
-              registration.unregister();
-              console.log('Unregistered existing SW on localhost'); 
-          }
-      });
   }
 });
