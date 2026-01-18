@@ -22,7 +22,7 @@
 
 ## 🌌 Overview
 
-**Image3D Studio** is a high-performance web application designed for artists and developers to instantly visualize texture maps on various 3D geometry. 
+**3D Image Studio** is a high-performance web application designed for artists and developers to instantly visualize texture maps on various 3D geometry. 
 
 Beyond a simple viewer, it features a robust **"Soft Orbital" UI**—a translucent, glass-like interface that floats above a digital horizon. It includes advanced camera controls, real-time material editing, and is fully installable as a **Progressive Web App (PWA)** for offline creativity.
 
