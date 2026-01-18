@@ -1,7 +1,7 @@
 /* --- Mobile Overrides (Obsidian Dock) --- */
 
 .mobile-content-wrapper {
-    margin-bottom: 16px; /* Reduced specificty spacing */
+    margin-bottom: 8px; /* Reduced specificty spacing */
     width: 100%;
 }
 
