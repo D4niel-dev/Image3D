@@ -101,11 +101,13 @@ export class BottomSheet {
                 item.element.classList.remove('mobile-content-wrapper');
                 // Attempt to put back in original place
                 if (item.parent) {
-                    try {
+                    // Check if nextSibling is valid and is a child of parent
+                    const isValidSibling = item.nextSibling && item.parent.contains(item.nextSibling);
+                    
+                    if (isValidSibling) {
                         item.parent.insertBefore(item.element, item.nextSibling);
-                    } catch (e) {
-                        // Fallback: If nextSibling is gone or invalid, just append
-                        console.warn('Restore fallback for', item.element, e);
+                    } else {
+                        // Sibling is gone or invalid, append to end (safest fallback)
                         item.parent.appendChild(item.element);
                     }
                 } else {
