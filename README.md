@@ -9,7 +9,7 @@
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=rounded-square&logo=typescript)](https://www.typescriptlang.org/)
   [![Three.js](https://img.shields.io/badge/Three.js-r171-white?style=rounded-square&logo=three.js)](https://threejs.org/)
   [![PWA](https://img.shields.io/badge/PWA-Ready-purple?style=rounded-square&logo=pwa)](https://web.dev/progressive-web-apps/)
-  ![Build](https://img.shields.io/badge/Build-1.0.1-blue)
+  ![Build](https://img.shields.io/badge/Build-1.1.0-blue)
   ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Web%20%7C%20Mobile-lightgrey)
 
   <p align="center">
@@ -31,10 +31,11 @@ Beyond a simple viewer, it features a robust **"Soft Orbital" UI**—a transluce
 ### 🎨 Visual & UI
 - **Soft Orbital Theme**: Deep space backdrops, neon cyan accents (#00f0ff), and frosted glass panels (`backdrop-filter: blur`).
 - **Smooth Animations**: Physics-based accordion menus and panel transitions.
-- **Responsive Design**: "Obsidian Slate" mobile adaptation with touch-optimized gesture controls.
+- **Mobile-First Design**: Dedicated "Floating Glass Dock" interface for mobile, featuring touch-optimized bottom sheets and compact HUD.
 
 ### 🛠 Technical Core
 - **Real-time Rendering**: Powered by **Three.js** with optimized geometry and shader materials.
+- **Universal Deployment**: CI/CD ready for **GitHub Pages** (subdirectory support) and traditional hosts.
 - **PWA Support**: Offline-first capability with Service Worker caching and standalone installability.
 - **State Persistence**: Settings (camera, material, visuals) are saved automatically to local storage.
 - **Error Handling**: integrated global error trapping with a neon-toast notification system.
@@ -87,8 +88,10 @@ npm run build
 - **`src/app.ts`**: Core orchestrator connecting Scene and UI.
 - **`src/scene/`**: Three.js logic (`SceneManager`, `Lighting`, `Geometry`).
 - **`src/ui/`**: UI components (`UIManager`, `NotificationSystem`, `BottomSheet`).
-- **`src/utils/`**: Helpers (`SettingsManager`, `DeviceUtils`).
-- **`src/styles/`**: CSS variables and theme definitions.
+- **`src/utils/`**: Helpers (`SettingsManager`, `DeviceUtils`, `StatsMonitor`).
+- **`src/styles/`**:
+    - `main.css`: Core "Soft Orbital" theme and desktop layout.
+    - `mobile.css`: Mobile-specific overrides, Floating Dock, and Bottom Sheet styles.
 
 ## 📦 Progressive Web App
 

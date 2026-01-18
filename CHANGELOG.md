@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-01-18
+### Mobile Redesign & Deployment Stabilization
+
+Significant improvements to the mobile experience with a new "Avant-Garde" floating dock and simplified interaction model, alongside critical deployment fixes for GitHub Pages.
+
+### 🚀 Added
+- **Mobile Glass Dock**: A floating, pill-shaped navigation dock for mobile devices, replacing the squashed sidebar.
+- **Tight Layout System**: Optimized spacing for mobile settings panels with zero-gap headers and integrated content.
+- **Defensive DOM Restoration**: Robust logic in `BottomSheet` to preventing crashes when toggling views.
+- **GitHub Pages Support**: Configured `package.json` (`homepage`) and webpack (`publicPath: 'auto'`) for subdirectory deployment.
+
+### 💅 Polished
+- **Status Indicator**: Relaxed FPS monitoring thresholds (Green > 15 FPS) to prevent false alarms.
+- **Text Rendering**: Fixed blurry text on glass panels by moving backdrop filters to pseudo-elements.
+- **Actions Panel**: Added "OPERATIONS" header to mobile view for better navigation clarity.
+
+### 🐛 Fixed
+- **Mobile Interactions**: Resolved `pointer-events` issue that made mobile buttons unclickable.
+- **Service Worker**: Added "Kill Switch" logic to clear stale workers causing cache loops.
+- **Asset Loading**: Fixed relative path resolution for `manifest.json` and icons in production builds.
+
+---
+
 ## [1.0.1] - 2026-01-18
 ### "Soft Orbital" Update & PWA Support
 
