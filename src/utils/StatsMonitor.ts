@@ -22,14 +22,14 @@ export class StatsMonitor {
         // Optional: Change color if low FPS
         const pill = document.querySelector('.stat-pill');
         if (pill) {
-             const dot = pill.querySelector('.bg-emerald-500');
-             const ping = pill.querySelector('.animate-ping');
-             if (this.fps < 30) {
+             const dot = pill.querySelector('.bg-emerald-500, .bg-red-500');
+             // We don't have ping anymore, removed it in previous steps or never added it? 
+             // The HTML has `span.bg-emerald-500`.
+             
+             if (this.fps < 15) { // Relaxed threshold
                  dot?.classList.replace('bg-emerald-500', 'bg-red-500');
-                 ping?.classList.replace('bg-emerald-400', 'bg-red-400');
              } else {
                  dot?.classList.replace('bg-red-500', 'bg-emerald-500');
-                 ping?.classList.replace('bg-red-400', 'bg-emerald-400');
              }
         }
     }

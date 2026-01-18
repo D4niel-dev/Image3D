@@ -43,18 +43,14 @@ export class BottomSheet {
         }
     }
   
+    // Track currently borrowed elements to restore them later
+    private currentBorrowed: { element: HTMLElement, parent: HTMLElement | null, nextSibling: Node | null }[] = [];
+
     private renderContent(mode: string) {
-        // Clear current (We do NOT destroy the elements, we append them back to desktop? 
-        // No, for this simple implementation we just clear the container. 
-        // The elements are 'stolen'. We need to be careful not to lose them if we switch tabs.
-        // Actually, if we clear innerHTML, we destroy the event listeners if we cloned.
-        // If we moved them, we need to append them back or just hide them?
-        // Let's assume we pull them fresh each time. 
-        // BUT if we appended them to 'target', and now we set innerHTML='', they are gone.
-        // FIX: We must APPEND them. If they are already there, just show?
-        // Simpler: We just move them. If we switch tabs, we move the current content back to a "storage" fragment or just don't worry about desktop restoration for this session.
+        // 1. RESTORE previously borrowed elements to their original homes
+        this.restoreContent();
         
-        // 1. Recover existing content to a safe place? (Skip for now, assuming Mobile Only session)
+        // 2. Clear container (now safe)
         this.target.innerHTML = '';
         
         let contents: HTMLElement[] = [];
@@ -62,28 +58,20 @@ export class BottomSheet {
         if (mode === 'shapes') {
             const el = document.querySelector('.control-group:has(#btn-cube)');
             if(el) contents.push(el as HTMLElement);
-        } 
-        else if (mode === 'actions') {
-             // Actions Toggle Content
+        } else if (mode === 'actions') {
              const el = document.getElementById('actions-content');
              if(el) {
                  el.classList.remove('hidden');
                  contents.push(el);
              }
-             // Also include Upload/Snapshot which might be outside? 
-             // In index.html, they are inside actions-content. Correct.
-        } 
-        else if (mode === 'settings') {
-             // 1. Material (Important!)
+        } else if (mode === 'settings') {
              const matHeader = document.getElementById('material-toggle');
              const matContent = document.getElementById('material-content');
-             if (matHeader) contents.push(matHeader); // Keep header style? Or just content?
+             if (matHeader) contents.push(matHeader);
              if (matContent) {
                  matContent.classList.remove('hidden');
                  contents.push(matContent);
              }
-
-             // 2. Advanced
              const advContent = document.getElementById('advanced-content');
              if(advContent) {
                  advContent.classList.remove('hidden');
@@ -91,11 +79,35 @@ export class BottomSheet {
              }
         }
   
+        // 3. BORROW new elements
         contents.forEach(c => {
-            // Apply a mobile-specific class for styling if needed
+            // Save state for restoration
+            this.currentBorrowed.push({
+                element: c,
+                parent: c.parentElement,
+                nextSibling: c.nextSibling
+            });
+
             c.classList.add('mobile-content-wrapper');
             this.target.appendChild(c);
         });
+    }
+
+    private restoreContent() {
+        this.currentBorrowed.forEach(item => {
+            if (item.element) {
+                item.element.classList.remove('mobile-content-wrapper');
+                // Attempt to put back in original place
+                if (item.parent) {
+                    item.parent.insertBefore(item.element, item.nextSibling);
+                } else {
+                    // Fallback if parent lost (rare in this app structure)
+                    // Just append to body hidden or similar? 
+                    // For now, if no parent, we probably don't need to restore strictly.
+                }
+            }
+        });
+        this.currentBorrowed = [];
     }
   
     private setupGestures() {
