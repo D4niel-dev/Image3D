@@ -3,8 +3,6 @@ import './styles/mobile.css';
 import { App } from './app';
 import { NotificationSystem } from './ui/NotificationSystem';
 
-console.log('🚀 BUNDLE LOADED - STARTING EXECUTION');
-
 document.addEventListener('DOMContentLoaded', () => {
   // Init Notifications
   NotificationSystem.init();
