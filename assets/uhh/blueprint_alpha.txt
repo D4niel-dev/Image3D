@@ -1,0 +1,18 @@
+
+      +------+
+    .'      /|
+   +------+  |
+   |      |  |
+   |      |  +
+   |      |.'
+   +------+
+
+[CLASSIFIED SCHEMATIC]
+OBJECT: HYPER-CUBE [RENDER_MODE: WIREFRAME]
+STATUS: STABLE
+MATERIAL: NEON_GLASS
+REFRACTIVE_INDEX: 1.54
+ROUGHNESS: 0.1
+METALNESS: 0.9
+
+// DO NOT DISTRIBUTE //

@@ -1,0 +1,21 @@
+{
+  "name": "Image3D Studio",
+  "short_name": "Image3D",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "description": "Interactive 3D Texture Visualizer",
+  "icons": [
+    {
+      "src": "assets/icons/app_icon_lm.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/app_icon_lm.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

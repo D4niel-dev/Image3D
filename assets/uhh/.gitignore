@@ -1,0 +1,9 @@
+# Ignore noisy outputs
+exports/
+debug/renders/
+*.gif
+*.png
+*.jpg
+*.json
+!camera_dump.json
+!scene_state.json

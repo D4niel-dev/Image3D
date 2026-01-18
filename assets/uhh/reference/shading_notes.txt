@@ -1,0 +1,1 @@
+﻿Lighting needs more ambient occlusion on the bottom face.
