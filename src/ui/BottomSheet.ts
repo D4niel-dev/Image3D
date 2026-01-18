@@ -59,7 +59,9 @@ export class BottomSheet {
             const el = document.querySelector('.control-group:has(#btn-cube)');
             if(el) contents.push(el as HTMLElement);
         } else if (mode === 'actions') {
+             const head = document.getElementById('actions-toggle'); // Added Header
              const el = document.getElementById('actions-content');
+             if(head) contents.push(head);
              if(el) {
                  el.classList.remove('hidden');
                  contents.push(el);
