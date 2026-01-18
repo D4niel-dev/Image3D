@@ -1,8 +1,13 @@
 /* --- Mobile Overrides (Obsidian Dock) --- */
 
 .mobile-content-wrapper {
-    margin-bottom: 24px;
+    margin-bottom: 16px; /* Reduced specificty spacing */
     width: 100%;
+}
+
+/* Keep Headers close to their content */
+button.mobile-content-wrapper {
+    margin-bottom: 4px;
 }
 
 @media (max-width: 768px) {
