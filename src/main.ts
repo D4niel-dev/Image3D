@@ -31,7 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Skip on localhost to avoid refresh loops with DevServer
   if ('serviceWorker' in navigator && window.location.hostname !== 'localhost') {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js').then(
+      // Use relative path for GitHub Pages compatibility
+      navigator.serviceWorker.register('service-worker.js').then(
         (registration) => {
           console.log('ServiceWorker registration successful with scope: ', registration.scope);
         },
