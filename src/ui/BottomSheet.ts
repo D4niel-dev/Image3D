@@ -65,14 +65,19 @@ export class BottomSheet {
                  contents.push(el);
              }
         } else if (mode === 'settings') {
+             // 1. Material (Important!)
              const matHeader = document.getElementById('material-toggle');
              const matContent = document.getElementById('material-content');
-             if (matHeader) contents.push(matHeader);
+             if (matHeader) contents.push(matHeader); // Keep header style? Or just content?
              if (matContent) {
                  matContent.classList.remove('hidden');
                  contents.push(matContent);
              }
+
+             // 2. Advanced
+             const advHeader = document.getElementById('advanced-toggle'); // Added Header
              const advContent = document.getElementById('advanced-content');
+             if(advHeader) contents.push(advHeader);
              if(advContent) {
                  advContent.classList.remove('hidden');
                  contents.push(advContent);
@@ -101,11 +106,16 @@ export class BottomSheet {
                 item.element.classList.remove('mobile-content-wrapper');
                 // Attempt to put back in original place
                 if (item.parent) {
-                    // Check if nextSibling is valid and is a child of parent
-                    const isValidSibling = item.nextSibling && item.parent.contains(item.nextSibling);
+                    // Check if nextSibling is valid and is a DIRECT child of parent
+                    const isValidSibling = item.nextSibling && item.nextSibling.parentNode === item.parent;
                     
                     if (isValidSibling) {
-                        item.parent.insertBefore(item.element, item.nextSibling);
+                        try {
+                            item.parent.insertBefore(item.element, item.nextSibling);
+                        } catch(e) {
+                             console.warn('Insert failed despite check', e);
+                             item.parent.appendChild(item.element);
+                        }
                     } else {
                         // Sibling is gone or invalid, append to end (safest fallback)
                         item.parent.appendChild(item.element);
