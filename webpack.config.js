@@ -35,7 +35,7 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: "assets", to: "assets", noErrorOnMissing: true },
-        { from: "src/manifest.json", to: "manifest.json" },
+        { from: "manifest.json", to: "manifest.json" },
         { from: "src/service-worker.js", to: "service-worker.js" },
       ],
     }),
