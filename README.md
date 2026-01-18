@@ -1,14 +1,16 @@
 <div align="center">
   <img src="assets/icons/app_banner.png" alt="Image3D Banner" width="100%" />
 
-  # Image3D Studio
+  # 3D Image Studio
   
   **Interactive 3D Texture Visualizer & Generator**
   
-  [![License](https://img.shields.io/badge/license-MIT-00f0ff?style=flat-square)](LICENSE)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-  [![Three.js](https://img.shields.io/badge/Three.js-r171-white?style=flat-square&logo=three.js)](https://threejs.org/)
-  [![PWA](https://img.shields.io/badge/PWA-Ready-purple?style=flat-square&logo=pwa)](https://web.dev/progressive-web-apps/)
+  [![License](https://img.shields.io/badge/License-MIT-00f0ff)](LICENSE)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=rounded-square&logo=typescript)](https://www.typescriptlang.org/)
+  [![Three.js](https://img.shields.io/badge/Three.js-r171-white?style=rounded-square&logo=three.js)](https://threejs.org/)
+  [![PWA](https://img.shields.io/badge/PWA-Ready-purple?style=rounded-square&logo=pwa)](https://web.dev/progressive-web-apps/)
+  ![Build](https://img.shields.io/badge/Build-1.0.1-blue)
+  ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Web%20%7C%20Mobile-lightgrey)
 
   <p align="center">
     A premium, <strong>Soft Orbital</strong> workstation for visualizing textures on 3D primitives.<br>
@@ -20,7 +22,7 @@
 
 ## 🌌 Overview
 
-**Image3D Studio** is a high-performance web application designed for artists and developers to instantly visualize texture maps on various 3D geometry. 
+**3D Image Studio** is a high-performance web application designed for artists and developers to instantly visualize texture maps on various 3D geometry. 
 
 Beyond a simple viewer, it features a robust **"Soft Orbital" UI**—a translucent, glass-like interface that floats above a digital horizon. It includes advanced camera controls, real-time material editing, and is fully installable as a **Progressive Web App (PWA)** for offline creativity.
 
@@ -102,5 +104,5 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ---
 
 <div align="center">
-  <sub>Designed & Engineered with the "Soft Orbital" Design System.</sub>
+  <sub>Designed & Engineered with the <i>"Soft Orbital"</i> Design System.</sub>
 </div>
