@@ -1,7 +1,7 @@
 <div align="center">
   <img src="assets/icons/app_banner.png" alt="Image3D Banner" width="100%" />
 
-  # Image3D Studio
+  # 3D Image Studio
   
   **Interactive 3D Texture Visualizer & Generator**
   
@@ -104,5 +104,5 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ---
 
 <div align="center">
-  <sub>Designed & Engineered with the "Soft Orbital" Design System.</sub>
+  <sub>Designed & Engineered with the <i>"Soft Orbital"</i> Design System.</sub>
 </div>
