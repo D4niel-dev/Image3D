@@ -56,10 +56,10 @@ Beyond a simple viewer, it features a robust **"Soft Orbital" UI**—a transluce
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/image3d-update.git
+git clone https://github.com/yourusername/Image3D.git
 
 # Enter directory
-cd image3d-update
+cd Image3D
 
 # Install dependencies
 npm install
