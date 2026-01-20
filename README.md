@@ -50,9 +50,9 @@ Beyond a simple viewer, it features a robust **"Soft Orbital" UI**—a transluce
 
 ### Prerequisites
 - Node.js (v16+)
-- npm or yarn
+- npm or yarn (Recommended npm)
 
-### Installation
+### Installation 📥
 
 ```bash
 # Clone the repository
@@ -65,7 +65,7 @@ cd Image3D
 npm install
 ```
 
-### Development
+### Development 🖥
 
 ```bash
 # Run dev server with Hot Module Replacement
@@ -75,7 +75,7 @@ npm run dev
 ./dev.ps1
 ```
 
-### Production Build
+### Production Build ⚙️
 
 ```bash
 # Build for production (outputs to /dist)
@@ -103,6 +103,12 @@ Image3D Studio meets all PWA criteria:
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
+## 📃 Feedback & Issues
+
+If you have feedback/suggestions or issues with the app, please make a **Pull Request** in this repo.
 
 ---
 
