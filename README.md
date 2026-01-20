@@ -48,7 +48,7 @@ Beyond a simple viewer, it features a robust **"Soft Orbital" UI**—a transluce
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### Prerequisites 📝
 - Node.js (v16+)
 - npm or yarn (Recommended npm)
 
