@@ -104,7 +104,7 @@ Image3D Studio meets all PWA criteria:
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
----
+
 
 ## 📃 Feedback & Issues
 
