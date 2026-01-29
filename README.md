@@ -56,7 +56,7 @@ Beyond a simple viewer, it features a robust **"Soft Orbital" UI**—a transluce
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/Image3D.git
+git clone https://github.com/d4niel-dev/Image3D.git
 
 # Enter directory
 cd Image3D
